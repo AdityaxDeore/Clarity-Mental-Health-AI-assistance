@@ -1,0 +1,2319 @@
+================================================================================
+                    CLARITY - MENTAL HEALTH PLATFORM
+                         DATABASE DESIGN DOCUMENT
+================================================================================
+
+Created: 2 February 2026
+Platform: Clarity - Mental Health & Wellness Application
+Database Type: Relational Database (MySQL/PostgreSQL)
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+1. ER Diagram Notation Guide
+2. Entity Definitions with Attributes
+3. Relationship Diagram
+4. Complete ER Diagram
+5. Cardinality Summary
+6. SQL Schema Reference
+
+================================================================================
+                         1. ER DIAGRAM NOTATION GUIDE
+================================================================================
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                          STANDARD ER DIAGRAM SYMBOLS                          ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  ┌─────────────────┐                                                          ║
+║  │                 │                                                          ║
+║  │     ENTITY      │    ← RECTANGLE = Strong Entity (Table)                   ║
+║  │                 │                                                          ║
+║  └─────────────────┘                                                          ║
+║                                                                               ║
+║  ╔═════════════════╗                                                          ║
+║  ║                 ║                                                          ║
+║  ║  WEAK ENTITY    ║    ← DOUBLE RECTANGLE = Weak Entity                      ║
+║  ║                 ║      (Depends on another entity)                         ║
+║  ╚═════════════════╝                                                          ║
+║                                                                               ║
+║         ○                                                                     ║
+║        ( )         ← CIRCLE/ELLIPSE = Simple Attribute                        ║
+║         ○                                                                     ║
+║                                                                               ║
+║        ◉                                                                      ║
+║       (●)          ← FILLED/UNDERLINED CIRCLE = Primary Key Attribute         ║
+║        ◉                                                                      ║
+║                                                                               ║
+║        ○- - -○                                                                ║
+║       (  ·  )      ← DASHED CIRCLE = Derived Attribute                        ║
+║        ○- - -○                                                                ║
+║                                                                               ║
+║        ○───○                                                                  ║
+║       (   ( ))     ← DOUBLE ELLIPSE = Multi-valued Attribute                  ║
+║        ○───○                                                                  ║
+║                                                                               ║
+║        ◊                                                                      ║
+║       ╱ ╲                                                                     ║
+║      ╱   ╲         ← DIAMOND = Relationship                                   ║
+║      ╲   ╱                                                                    ║
+║       ╲ ╱                                                                     ║
+║        ◊                                                                      ║
+║                                                                               ║
+║       ◇◇                                                                      ║
+║      ╱◊◊╲                                                                     ║
+║     ╱ ◊◊ ╲         ← DOUBLE DIAMOND = Identifying Relationship                ║
+║     ╲ ◊◊ ╱           (For weak entities)                                      ║
+║      ╲◊◊╱                                                                     ║
+║       ◇◇                                                                      ║
+║                                                                               ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                          CARDINALITY NOTATIONS                                ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  ─────────────────    Single Line = Partial Participation                     ║
+║                       (Entity MAY participate in relationship)                ║
+║                                                                               ║
+║  ═════════════════    Double Line = Total Participation                       ║
+║                       (Entity MUST participate in relationship)               ║
+║                                                                               ║
+║  ──────────────────►  Arrow = One (direction of "one" side)                   ║
+║                                                                               ║
+║  ◄─────────────────►  Arrows on both sides = One-to-One (1:1)                 ║
+║                                                                               ║
+║  ──────────────────   No arrow = Many side                                    ║
+║                                                                               ║
+║  ────────────◄────    Arrow to one side = Many-to-One (N:1)                   ║
+║                                                                               ║
+║  ────────────────     No arrows = Many-to-Many (M:N)                          ║
+║                                                                               ║
+║                                                                               ║
+║  CROW'S FOOT NOTATION (Alternative):                                          ║
+║  ───────────────┤     One (mandatory)                                         ║
+║  ───────────────○     One (optional)                                          ║
+║  ──────────────<      Many                                                    ║
+║  ─────────────○<      Many (optional)                                         ║
+║  ─────────────┤<      Many (mandatory)                                        ║
+║                                                                               ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                              KEY SYMBOLS                                      ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  🔑  or  [PK]     = Primary Key                                               ║
+║  🗝️   or  [FK]     = Foreign Key                                               ║
+║  [PFK]            = Primary Foreign Key (composite)                           ║
+║  [UQ]             = Unique Key                                                ║
+║  [NN]             = Not Null                                                  ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+================================================================================
+                    2. ENTITY DEFINITIONS WITH ATTRIBUTES
+================================================================================
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                              ENTITY: USERS                                   ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                            ○ email        ○ password_hash
+                             \              /
+               ○ first_name   \            /   ○ last_name
+                    \          \          /         /
+                     \          \        /         /
+                      \    ┌─────────────────┐    /
+            ◉ user_id ─────│                 │──── ○ date_of_birth
+               [PK]        │      USERS      │
+                           │                 │──── ○ gender
+                      ┌────└─────────────────┘────┐
+                     /              |              \
+                    /               |               \
+           ○ phone               ○ profile_pic    ○ created_at
+                                                       |
+                                                 ○ last_login
+
+  Attribute Details:
+  ┌──────────────────┬──────────────┬────────────────────────────────────────┐
+  │ Attribute        │ Type         │ Constraints                            │
+  ├──────────────────┼──────────────┼────────────────────────────────────────┤
+  │ ◉ user_id        │ INT          │ PRIMARY KEY, AUTO_INCREMENT            │
+  │ ○ email          │ VARCHAR(255) │ UNIQUE, NOT NULL                       │
+  │ ○ password_hash  │ VARCHAR(255) │ NOT NULL                               │
+  │ ○ first_name     │ VARCHAR(100) │ NOT NULL                               │
+  │ ○ last_name      │ VARCHAR(100) │                                        │
+  │ ○ date_of_birth  │ DATE         │                                        │
+  │ ○ gender         │ ENUM         │ ('male','female','other','prefer_not') │
+  │ ○ phone          │ VARCHAR(20)  │                                        │
+  │ ○ profile_picture│ VARCHAR(500) │                                        │
+  │ ○ created_at     │ TIMESTAMP    │ DEFAULT CURRENT_TIMESTAMP              │
+  │ ○ last_login     │ TIMESTAMP    │                                        │
+  └──────────────────┴──────────────┴────────────────────────────────────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                           ENTITY: ASSESSMENTS                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                         ○ name            ○ full_name
+                          \                  /
+                           \                /
+                            \              /
+                    ┌───────────────────────────┐
+    ◉ assessment_id─│                           │─── ○ description
+         [PK]       │       ASSESSMENTS         │
+                    │                           │─── ○ category
+                    └───────────────────────────┘
+                           /       |       \
+                          /        |        \
+                         /         |         \
+               ○ total_questions   |    ○ time_limit_minutes
+                            ○ max_score
+
+  Attribute Details:
+  ┌──────────────────┬──────────────┬────────────────────────────────────────┐
+  │ Attribute        │ Type         │ Constraints                            │
+  ├──────────────────┼──────────────┼────────────────────────────────────────┤
+  │ ◉ assessment_id  │ INT          │ PRIMARY KEY, AUTO_INCREMENT            │
+  │ ○ name           │ VARCHAR(100) │ NOT NULL (e.g., 'GAD-7', 'PHQ-9')      │
+  │ ○ full_name      │ VARCHAR(255) │                                        │
+  │ ○ description    │ TEXT         │                                        │
+  │ ○ category       │ ENUM         │ ('anxiety','depression','stress',etc.) │
+  │ ○ total_questions│ INT          │                                        │
+  │ ○ max_score      │ INT          │                                        │
+  │ ○ time_limit_min │ INT          │                                        │
+  └──────────────────┴──────────────┴────────────────────────────────────────┘
+
+  Sample Data:
+  ┌────────┬─────────────────────────────────────┬───────────┬───────────┐
+  │  Name  │           Full Name                 │ Questions │ Max Score │
+  ├────────┼─────────────────────────────────────┼───────────┼───────────┤
+  │ PHQ-9  │ Patient Health Questionnaire-9      │     9     │    27     │
+  │ GAD-7  │ Generalized Anxiety Disorder-7      │     7     │    21     │
+  │ PSS-10 │ Perceived Stress Scale-10           │    10     │    40     │
+  │ PCL-5  │ PTSD Checklist for DSM-5            │    20     │    80     │
+  │ ISI    │ Insomnia Severity Index             │     7     │    28     │
+  └────────┴─────────────────────────────────────┴───────────┴───────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                    WEAK ENTITY: ASSESSMENT_QUESTIONS                         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                    ○ question_number        ○ question_text
+                          \                      /
+                           \                    /
+                            \                  /
+                    ╔═══════════════════════════════╗
+    ◉ question_id ══║                               ║
+        [PK]        ║   ASSESSMENT_QUESTIONS        ║══ ○ max_points
+                    ║      (Weak Entity)            ║
+                    ╚═══════════════════════════════╝
+                                  ║
+                                  ║ [FK]
+                                  ║
+                           ◉ assessment_id
+                              (Partial Key)
+
+  Note: This is a WEAK ENTITY (double rectangle) because it cannot exist
+  without its parent ASSESSMENTS entity. The identifying relationship
+  uses a double diamond.
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                         ENTITY: SEVERITY_LEVELS                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                   ○ min_score              ○ max_score
+                        \                      /
+                         \                    /
+                          \                  /
+                    ┌───────────────────────────┐
+   ◉ severity_id ───│                           │─── ○ severity_label
+        [PK]        │     SEVERITY_LEVELS       │
+                    │                           │─── ○ description
+                    └───────────────────────────┘
+                          /         |         \
+                         /          |          \
+                        /           |           \
+              ◉ assessment_id   ○ recommendation  ○ requires_professional
+                   [FK]
+
+  GAD-7 Severity Interpretation:
+  ┌───────────┬──────────┬──────────────────────────────────────────────┐
+  │   Score   │ Severity │              Recommendation                  │
+  ├───────────┼──────────┼──────────────────────────────────────────────┤
+  │   0 - 4   │ Minimal  │ Continue self-care practices                 │
+  │   5 - 9   │ Mild     │ Monitor symptoms, consider counseling        │
+  │  10 - 14  │ Moderate │ Professional consultation recommended        │
+  │  15 - 21  │ Severe   │ Immediate professional intervention needed   │
+  └───────────┴──────────┴──────────────────────────────────────────────┘
+
+  PHQ-9 Severity Interpretation:
+  ┌───────────┬────────────────────┬────────────────────────────────────┐
+  │   Score   │      Severity      │          Recommendation            │
+  ├───────────┼────────────────────┼────────────────────────────────────┤
+  │   0 - 4   │ Minimal Depression │ Self-care, lifestyle changes       │
+  │   5 - 9   │ Mild Depression    │ Watchful waiting, supportive care  │
+  │  10 - 14  │ Moderate           │ Treatment plan consideration       │
+  │  15 - 19  │ Moderately Severe  │ Active treatment with therapy      │
+  │  20 - 27  │ Severe Depression  │ Immediate intervention required    │
+  └───────────┴────────────────────┴────────────────────────────────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                         ENTITY: USER_ASSESSMENTS                             ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+              ◉ user_id [FK]              ◉ assessment_id [FK]
+                    \                          /
+                     \                        /
+                      \                      /
+                    ┌───────────────────────────┐
+ ◉ user_assessment_id│                          │─── ○ total_score
+        [PK]         │     USER_ASSESSMENTS     │
+                     │                          │─── ◉ severity_id [FK]
+                     └───────────────────────────┘
+                          /         |         \
+                         /          |          \
+                        /           |           \
+               ○ taken_at    ○ completion_time   ○ is_completed
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                   WEAK ENTITY: USER_ASSESSMENT_RESPONSES                     ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+             ◉ user_assessment_id [FK]         ◉ question_id [FK]
+                       \                            /
+                        \                          /
+                         \                        /
+                    ╔═════════════════════════════════╗
+    ◉ response_id ══║                                 ║
+         [PK]       ║  USER_ASSESSMENT_RESPONSES      ║
+                    ║        (Weak Entity)            ║
+                    ╚═════════════════════════════════╝
+                              /           \
+                             /             \
+                            /               \
+                   ○ response_value    ○ response_text
+
+  Response Options (0-3 scale):
+  ┌───────┬──────────────────────────────┐
+  │ Value │         Response Text        │
+  ├───────┼──────────────────────────────┤
+  │   0   │ Not at all                   │
+  │   1   │ Several days                 │
+  │   2   │ More than half the days      │
+  │   3   │ Nearly every day             │
+  └───────┴──────────────────────────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                            ENTITY: DIAGNOSES                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                      ○ name                   ○ code (ICD-10)
+                        \                        /
+                         \                      /
+                          \                    /
+                    ┌───────────────────────────┐
+   ◉ diagnosis_id ──│                           │─── ○ category
+        [PK]        │       DIAGNOSES           │
+                    │                           │─── ○ description
+                    └───────────────────────────┘
+                              /         \
+                             /           \
+                            /             \
+                   ○ symptoms         ○ treatment_options
+
+  Sample Diagnoses:
+  ┌──────────┬─────────────────────────────────┬─────────────────┐
+  │ ICD Code │            Diagnosis            │    Category     │
+  ├──────────┼─────────────────────────────────┼─────────────────┤
+  │  F41.1   │ Generalized Anxiety Disorder    │ Anxiety         │
+  │  F32.1   │ Major Depressive Disorder       │ Depression      │
+  │  F43.10  │ Post-Traumatic Stress Disorder  │ Trauma          │
+  │  F42.2   │ Obsessive-Compulsive Disorder   │ OCD             │
+  │  F31.9   │ Bipolar Disorder                │ Mood            │
+  └──────────┴─────────────────────────────────┴─────────────────┘
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                          ENTITY: USER_DIAGNOSES                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+         ◉ user_id [FK]     ◉ diagnosis_id [FK]    ◉ user_assessment_id [FK]
+               \                   |                      /
+                \                  |                     /
+                 \                 |                    /
+                    ┌───────────────────────────┐
+ ◉ user_diagnosis_id│                           │─── ○ severity
+        [PK]        │      USER_DIAGNOSES       │
+                    │                           │─── ○ is_active
+                    └───────────────────────────┘
+                              /         \
+                             /           \
+                            /             \
+                   ○ diagnosed_at         ○ notes
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                           ENTITY: THERAPISTS                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                    ○ license_number          ○ specialization
+                          \                      /
+                           \                    /
+                            \                  /
+                    ┌───────────────────────────┐
+   ◉ therapist_id ──│                           │─── ○ years_experience
+        [PK]        │       THERAPISTS          │
+                    │                           │─── ○ hourly_rate
+                    └───────────────────────────┘
+                          /         |         \
+                         /          |          \
+                        /           |           \
+              ◉ user_id [FK]     ○ bio      ○ is_verified
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                          ENTITY: APPOINTMENTS                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+              ◉ user_id [FK]              ◉ therapist_id [FK]
+                    \                          /
+                     \                        /
+                      \                      /
+                    ┌───────────────────────────┐
+   ◉ appointment_id─│                           │─── ○ scheduled_at
+        [PK]        │      APPOINTMENTS         │
+                    │                           │─── ○ duration_minutes
+                    └───────────────────────────┘
+                          /         |         \
+                         /          |          \
+                        /           |           \
+                ○ status      ○ notes      ○ meeting_link
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                          ENTITY: MOOD_ENTRIES                                ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                      ○ mood_level               ○ mood_type
+                          \                        /
+                           \                      /
+                            \                    /
+                    ┌───────────────────────────┐
+     ◉ entry_id ────│                           │─── ○ notes
+        [PK]        │      MOOD_ENTRIES         │
+                    │                           │─── ○ entry_date
+                    └───────────────────────────┘
+                                  |
+                                  |
+                           ◉ user_id [FK]
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                         ENTITY: JOURNAL_ENTRIES                              ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                        ○ title                  ○ content
+                          \                        /
+                           \                      /
+                            \                    /
+                    ┌───────────────────────────┐
+    ◉ journal_id ───│                           │─── ○ is_private
+        [PK]        │     JOURNAL_ENTRIES       │
+                    │                           │─── ○ created_at
+                    └───────────────────────────┘
+                              /         \
+                             /           \
+                            /             \
+                   ◉ user_id [FK]      ○ updated_at
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                             ENTITY: GOALS                                    ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                        ○ title                ○ description
+                          \                        /
+                           \                      /
+                            \                    /
+                    ┌───────────────────────────┐
+      ◉ goal_id ────│                           │─── ○ target_date
+        [PK]        │          GOALS            │
+                    │                           │─── ○ status
+                    └───────────────────────────┘
+                              /         \
+                             /           \
+                            /             \
+                   ◉ user_id [FK]      ○ created_at
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                        ENTITY: EMERGENCY_CONTACTS                            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                        ○ name                 ○ relationship
+                          \                        /
+                           \                      /
+                            \                    /
+                    ┌───────────────────────────┐
+    ◉ contact_id ───│                           │─── ○ phone
+        [PK]        │    EMERGENCY_CONTACTS     │
+                    │                           │─── ○ is_primary
+                    └───────────────────────────┘
+                                  |
+                                  |
+                           ◉ user_id [FK]
+
+
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃                            ENTITY: RESOURCES                                 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+                        ○ title                ○ description
+                          \                        /
+                           \                      /
+                            \                    /
+                    ┌───────────────────────────┐
+   ◉ resource_id ───│                           │─── ○ resource_type
+        [PK]        │        RESOURCES          │
+                    │                           │─── ○ content_url
+                    └───────────────────────────┘
+                              /         \
+                             /           \
+                            /             \
+                   ○ category          ○ created_at
+
+
+================================================================================
+                  3. RELATIONSHIP DIAGRAM WITH PROPER NOTATION
+================================================================================
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                    RELATIONSHIP TYPES AND PARTICIPATION                       ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  LEGEND:                                                                      ║
+║  ═══════  Double line = Total Participation (MUST participate)               ║
+║  ───────  Single line = Partial Participation (MAY participate)              ║
+║  ───────► Arrow pointing to ONE side                                          ║
+║  ◇ ◇ ◇    Diamond = Relationship                                              ║
+║  ◆◆◆◆◆    Double Diamond = Identifying Relationship (for weak entities)      ║
+║  1, N, M  Cardinality numbers                                                 ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    USERS ←→ MOOD_ENTRIES (One-to-Many)
+───────────────────────────────────────────────────────────────────────────────
+
+                                      ◇
+                                     ╱ ╲
+    ┌─────────────┐      1         ╱   ╲        N        ┌──────────────┐
+    │             │───────────────◇ LOGS ◇═══════════════│              │
+    │    USERS    │               ╲   ╱                  │ MOOD_ENTRIES │
+    │             │                ╲ ╱                   │              │
+    └─────────────┘                 ◇                    └──────────────┘
+          │                                                     ║
+     Partial                                               Total
+   Participation                                        Participation
+  (User may or may                                    (Every mood entry
+   not log moods)                                    MUST belong to user)
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    USERS ←→ THERAPISTS (One-to-One)
+───────────────────────────────────────────────────────────────────────────────
+
+                                      ◇
+                                     ╱ ╲
+    ┌─────────────┐      1         ╱   ╲        1        ┌──────────────┐
+    │             │◄──────────────◇CAN_BE◇──────────────►│              │
+    │    USERS    │               ╲   ╱                  │  THERAPISTS  │
+    │             │                ╲ ╱                   │              │
+    └─────────────┘                 ◇                    └──────────────┘
+          │                                                     ║
+     Partial                                               Total
+   (Not all users                                      (Every therapist
+    are therapists)                                     MUST be a user)
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    USERS ←→ APPOINTMENTS ←→ THERAPISTS (Many-to-Many via Appointments)
+───────────────────────────────────────────────────────────────────────────────
+
+    ┌─────────────┐                  ◇                   ┌──────────────┐
+    │             │      N          ╱ ╲         N        │              │
+    │    USERS    │═══════════════◇BOOKS◇════════════════│  THERAPISTS  │
+    │             │               ╲   ╱                  │              │
+    └─────────────┘                ╲ ╱                   └──────────────┘
+          ║                         ◇                          ║
+     Total                          │                     Total
+   Participation                    │                   Participation
+                                    ▼
+                          ┌─────────────────┐
+                          │   APPOINTMENTS  │
+                          │  (Associative   │
+                          │    Entity)      │
+                          └─────────────────┘
+
+
+───────────────────────────────────────────────────────────────────────────────
+                ASSESSMENTS ←→ ASSESSMENT_QUESTIONS (Identifying Relationship)
+───────────────────────────────────────────────────────────────────────────────
+
+                                     ◆◆
+                                    ╱◆◆╲
+    ┌─────────────┐      1        ╱ ◆◆ ╲       N       ╔═══════════════════╗
+    │             │══════════════◆ HAS  ◆══════════════║                   ║
+    │ ASSESSMENTS │              ╲ ◆◆ ╱                ║ ASSESSMENT_       ║
+    │             │               ╲◆◆╱                 ║   QUESTIONS       ║
+    └─────────────┘                ◆◆                  ║  (Weak Entity)    ║
+          ║                                            ╚═══════════════════╝
+     Total                                                    ║
+   (Assessment                                            Total
+    must have                                           (Questions
+    questions)                                          MUST belong
+                                                        to assessment)
+
+    Note: Double diamond (◆◆) indicates IDENTIFYING RELATIONSHIP
+          Double rectangle indicates WEAK ENTITY
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    USERS ←→ ASSESSMENTS (Many-to-Many via User_Assessments)
+───────────────────────────────────────────────────────────────────────────────
+
+    ┌─────────────┐                  ◇                   ┌──────────────┐
+    │             │      M          ╱ ╲         N        │              │
+    │    USERS    │───────────────◇TAKES◇────────────────│ ASSESSMENTS  │
+    │             │               ╲   ╱                  │              │
+    └─────────────┘                ╲ ╱                   └──────────────┘
+          │                         ◇                          │
+     Partial                        │                     Partial
+   (User may not                    │                   (Assessment may
+    take any tests)                 ▼                   not be taken)
+                          ┌─────────────────┐
+                          │ USER_ASSESSMENTS│
+                          │  (Associative   │
+                          │    Entity)      │
+                          └─────────────────┘
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    ASSESSMENTS ←→ DIAGNOSES (Many-to-Many)
+───────────────────────────────────────────────────────────────────────────────
+
+    ┌─────────────┐                  ◇                   ┌──────────────┐
+    │             │      M          ╱ ╲         N        │              │
+    │ ASSESSMENTS │───────────────◇SCREENS◇──────────────│  DIAGNOSES   │
+    │             │               ╲   ╱                  │              │
+    └─────────────┘                ╲ ╱                   └──────────────┘
+          │                         ◇                          │
+     Partial                        │                     Partial
+                                    ▼
+                      ┌─────────────────────────┐
+                      │  ASSESSMENT_DIAGNOSES   │
+                      │    (Junction Table)     │
+                      └─────────────────────────┘
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    USERS ←→ DIAGNOSES (Many-to-Many via User_Diagnoses)
+───────────────────────────────────────────────────────────────────────────────
+
+    ┌─────────────┐                  ◇                   ┌──────────────┐
+    │             │      M          ╱ ╲         N        │              │
+    │    USERS    │───────────────◇ HAS ◇────────────────│  DIAGNOSES   │
+    │             │               ╲   ╱                  │              │
+    └─────────────┘                ╲ ╱                   └──────────────┘
+          │                         ◇                          │
+     Partial                        │                     Partial
+   (User may not                    ▼                   (Diagnosis may
+    have diagnosis)       ┌─────────────────┐           not be assigned)
+                          │ USER_DIAGNOSES  │
+                          │  (Associative   │
+                          │    Entity)      │
+                          └─────────────────┘
+
+
+───────────────────────────────────────────────────────────────────────────────
+                    USERS ←→ RESOURCES (Many-to-Many)
+───────────────────────────────────────────────────────────────────────────────
+
+    ┌─────────────┐                  ◇                   ┌──────────────┐
+    │             │      M          ╱ ╲         N        │              │
+    │    USERS    │───────────────◇ACCESS◇───────────────│  RESOURCES   │
+    │             │               ╲   ╱                  │              │
+    └─────────────┘                ╲ ╱                   └──────────────┘
+          │                         ◇                          │
+     Partial                        │                     Partial
+                                    ▼
+                          ┌─────────────────┐
+                          │ USER_RESOURCES  │
+                          │ (Junction with  │
+                          │  attributes)    │
+                          └─────────────────┘
+                               │       │
+                        ○ is_bookmarked │
+                                  ○ completed_at
+
+
+================================================================================
+                         4. COMPLETE ER DIAGRAM
+================================================================================
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║                    CLARITY MENTAL HEALTH PLATFORM                             ║
+║                 COMPLETE ENTITY RELATIONSHIP DIAGRAM                          ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+                                ┌─────────────┐
+                                │  RESOURCES  │
+                                └──────┬──────┘
+                                       │
+                                       │ M:N
+                                       ◇
+                                      ╱ ╲
+                                     ╱   ╲
+                                    ╱     ╲
+                                   ◇ACCESS ◇
+                                    ╲     ╱
+                                     ╲   ╱
+                                      ╲ ╱
+                                       ◇
+                                       │
+    ┌───────────┐      ◇       ┌──────┴──────┐       ◇       ┌─────────────────┐
+    │THERAPISTS │◄────◇ ◇─────│             │─────◇ ◇──────►│EMERGENCY_CONTACTS│
+    └─────┬─────┘    CAN_BE    │    USERS    │      HAS      └─────────────────┘
+          │      1:1           │             │         1:N
+          │                    └──────┬──────┘
+          │                           │
+          │ 1:N                       │
+          ◇                    ┌──────┴──────┬──────────────┬──────────────┐
+         ╱ ╲                   │             │              │              │
+        ╱   ╲                  │ 1:N         │ 1:N          │ 1:N          │ 1:N
+       ◇     ◇                 ◇             ◇              ◇              ◇
+       │     │                ╱ ╲           ╱ ╲            ╱ ╲            ╱ ╲
+       │     │               ╱   ╲         ╱   ╲          ╱   ╲          ╱   ╲
+       │     │              ◇LOGS ◇       ◇WRITES◇       ◇SETS ◇       ◇TAKES◇
+       │     │               ╲   ╱         ╲   ╱          ╲   ╱          ╲   ╱
+       │     │                ╲ ╱           ╲ ╱            ╲ ╱            ╲ ╱
+       │  N:1│                 ◇             ◇              ◇              ◇
+       │     │                 │             │              │              │
+       │     │                 ▼             ▼              ▼              │
+       │     │          ┌──────────┐  ┌──────────┐   ┌──────────┐         │
+       │     │          │  MOOD_   │  │ JOURNAL_ │   │  GOALS   │         │
+       │     │          │ ENTRIES  │  │ ENTRIES  │   │          │         │
+       │     │          └──────────┘  └──────────┘   └──────────┘         │
+       │     │                                                             │
+       ◇     ◇                                                             │
+      ╱ ╲   ╱ ╲                                                            │
+     ╱   ╲ ╱   ╲                                                           │
+    ◇BOOKS◇     ◇                                                          │
+     ╲   ╱                                                                 │
+      ╲ ╱                                                     N:1          │
+       ◇                                                       ◇           │
+       │                                                      ╱ ╲          │
+       ▼                                                     ╱   ╲         ▼
+┌──────────────┐                                            ◇     ◇  ┌───────────┐
+│ APPOINTMENTS │                                            │     │  │USER_      │
+└──────────────┘                                            │     │  │ASSESSMENTS│
+                                                            │     │  └─────┬─────┘
+                                                            │     │        │
+                                                            │     │        │ N:1
+                                    ┌───────────────────────┘     │        ◇
+                                    │                             │       ╱ ╲
+                                    ▼                             │      ╱   ╲
+                           ┌─────────────┐                        │     ◇     ◇
+                           │ SEVERITY_   │                        │     │     │
+                           │   LEVELS    │                        │     │     │
+                           └──────┬──────┘                        │     │     ▼
+                                  │                               │     │┌───────────┐
+                                  │ 1:N                           │     ││ASSESSMENTS│
+                                  │                               │     │└─────┬─────┘
+                                  ◇                               │     │      │
+                                 ╱ ╲                              │     │      │ 1:N
+                                ╱   ╲                             │     │      ◆◆
+                               ◇     ◇                            │     │     ╱◆◆╲
+                                ╲   ╱                             │     │    ╱ ◆◆ ╲
+                                 ╲ ╱                              │     │   ◆ HAS  ◆
+                                  ◇                               │     │    ╲ ◆◆ ╱
+                                  │                               │     │     ╲◆◆╱
+                                  │                               │     │      ◆◆
+                                  ▼                               │     │      │
+                                                                  │     │      ▼
+                                                                  │     │╔═══════════════╗
+                                                                  │     │║  ASSESSMENT_  ║
+                                                                  │     │║   QUESTIONS   ║
+                                                                  │     │║ (Weak Entity) ║
+                                                                  │     │╚═══════════════╝
+                                                                  │     │
+                                                                  │     │ 1:N
+                                                                  │     ◆◆
+                                                                  │    ╱◆◆╲
+                                                                  │   ╱ ◆◆ ╲
+                                                                  │  ◆ANSWERS◆
+                                                                  │   ╲ ◆◆ ╱
+                                                                  │    ╲◆◆╱
+                                                                  │     ◆◆
+                                                                  │     │
+                                                                  │     ▼
+                                                         ╔═══════════════════════╗
+                                                         ║  USER_ASSESSMENT_     ║
+                                                         ║     RESPONSES         ║
+                                                         ║   (Weak Entity)       ║
+                                                         ╚═══════════════════════╝
+
+
+                           ┌─────────────┐
+                           │ ASSESSMENTS │
+                           └──────┬──────┘
+                                  │
+                                  │ M:N
+                                  ◇
+                                 ╱ ╲
+                                ╱   ╲
+                               ◇SCREENS◇
+                                ╲   ╱
+                                 ╲ ╱
+                                  ◇
+                                  │
+                                  ▼
+                           ┌─────────────┐        M:N        ┌─────────────┐
+                           │  DIAGNOSES  │◄────────◇────────│    USERS    │
+                           └─────────────┘        HAS        └─────────────┘
+                                                   │
+                                                   ▼
+                                          ┌───────────────┐
+                                          │ USER_DIAGNOSES│
+                                          └───────────────┘
+
+
+================================================================================
+                         5. CARDINALITY SUMMARY TABLE
+================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                           RELATIONSHIP SUMMARY                                 │
+├────────────────────┬────────────────────┬──────────┬──────────┬───────────────┤
+│   Entity 1         │   Entity 2         │   Type   │  Line 1  │   Line 2      │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ MOOD_ENTRIES       │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ JOURNAL_ENTRIES    │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ GOALS              │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ EMERGENCY_CONTACTS │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ THERAPISTS         │   1:1    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ USER_ASSESSMENTS   │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ USER_DIAGNOSES     │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ APPOINTMENTS       │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USERS              │ RESOURCES          │   M:N    │ ──────   │ ──────        │
+│                    │  (via junction)    │          │ Partial  │ Partial       │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ THERAPISTS         │ APPOINTMENTS       │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ ASSESSMENTS        │ ASSESSMENT_QUES.   │   1:N    │ ══════   │ ══════        │
+│  (Identifying)     │  (Weak Entity)     │          │ Total    │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ ASSESSMENTS        │ SEVERITY_LEVELS    │   1:N    │ ══════   │ ══════        │
+│                    │                    │          │ Total    │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ ASSESSMENTS        │ USER_ASSESSMENTS   │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ ASSESSMENTS        │ DIAGNOSES          │   M:N    │ ──────   │ ──────        │
+│  (via junction)    │                    │          │ Partial  │ Partial       │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USER_ASSESSMENTS   │ USER_ASSESS_RESP.  │   1:N    │ ══════   │ ══════        │
+│  (Identifying)     │  (Weak Entity)     │          │ Total    │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USER_ASSESSMENTS   │ SEVERITY_LEVELS    │   N:1    │ ══════   │ ──────        │
+│                    │                    │          │ Total    │ Partial       │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ USER_ASSESSMENTS   │ USER_DIAGNOSES     │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ ASSESS._QUESTIONS  │ USER_ASSESS_RESP.  │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+├────────────────────┼────────────────────┼──────────┼──────────┼───────────────┤
+│ DIAGNOSES          │ USER_DIAGNOSES     │   1:N    │ ──────   │ ══════        │
+│                    │                    │          │ Partial  │ Total         │
+└────────────────────┴────────────────────┴──────────┴──────────┴───────────────┘
+
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                              LINE TYPE LEGEND                                 ║
+╠═══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  ══════════  DOUBLE LINE (Total Participation)                                ║
+║              Entity MUST participate in the relationship                      ║
+║              Example: Every MOOD_ENTRY must belong to a USER                  ║
+║                                                                               ║
+║  ──────────  SINGLE LINE (Partial Participation)                              ║
+║              Entity MAY participate in the relationship                       ║
+║              Example: A USER may or may not have MOOD_ENTRIES                 ║
+║                                                                               ║
+║  ──────────►  ARROW (points to ONE side)                                      ║
+║              The side with arrow has cardinality of 1                         ║
+║                                                                               ║
+║  ◄──────────►  ARROWS BOTH SIDES (One-to-One)                                 ║
+║              Both sides have cardinality of 1                                 ║
+║                                                                               ║
+║  ◆◆◆◆◆◆◆◆◆  DOUBLE DIAMOND (Identifying Relationship)                        ║
+║              Connects weak entity to its owner entity                         ║
+║              Weak entity cannot exist without owner                           ║
+║                                                                               ║
+║  ╔═════════╗  DOUBLE RECTANGLE (Weak Entity)                                  ║
+║  ║         ║  Entity depends on another entity for identification             ║
+║  ╚═════════╝  Has partial key (discriminator)                                 ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+
+================================================================================
+                         6. SQL SCHEMA REFERENCE
+================================================================================
+
+-- Create Database
+CREATE DATABASE clarity_mental_health;
+USE clarity_mental_health;
+
+-- 1. USERS TABLE (Strong Entity)
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,           -- ◉ PK
+    email VARCHAR(255) UNIQUE NOT NULL,               -- ○ Unique
+    password_hash VARCHAR(255) NOT NULL,              -- ○
+    first_name VARCHAR(100) NOT NULL,                 -- ○
+    last_name VARCHAR(100),                           -- ○
+    date_of_birth DATE,                               -- ○
+    gender ENUM('male', 'female', 'other', 'prefer_not_to_say'),
+    phone VARCHAR(20),                                -- ○
+    profile_picture VARCHAR(500),                     -- ○
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,   -- ○
+    last_login TIMESTAMP                              -- ○
+);
+
+-- 2. ASSESSMENTS TABLE (Strong Entity)
+CREATE TABLE Assessments (
+    assessment_id INT PRIMARY KEY AUTO_INCREMENT,     -- ◉ PK
+    name VARCHAR(100) NOT NULL,                       -- ○
+    full_name VARCHAR(255),                           -- ○
+    description TEXT,                                 -- ○
+    category ENUM('anxiety', 'depression', 'stress', 'ptsd', 'ocd', 
+                  'bipolar', 'substance', 'sleep'),   -- ○
+    total_questions INT,                              -- ○
+    max_score INT,                                    -- ○
+    time_limit_minutes INT                            -- ○
+);
+
+-- 3. ASSESSMENT_QUESTIONS TABLE (Weak Entity - Double Rectangle)
+CREATE TABLE AssessmentQuestions (
+    question_id INT PRIMARY KEY AUTO_INCREMENT,       -- ◉ PK
+    assessment_id INT NOT NULL,                       -- ◉ FK (Identifying)
+    question_number INT NOT NULL,                     -- ○ Partial Key
+    question_text TEXT NOT NULL,                      -- ○
+    max_points INT DEFAULT 3,                         -- ○
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id)
+        ON DELETE CASCADE                             -- Identifying Relationship
+);
+
+-- 4. SEVERITY_LEVELS TABLE (Strong Entity)
+CREATE TABLE SeverityLevels (
+    severity_id INT PRIMARY KEY AUTO_INCREMENT,       -- ◉ PK
+    assessment_id INT NOT NULL,                       -- ◉ FK
+    min_score INT NOT NULL,                           -- ○
+    max_score INT NOT NULL,                           -- ○
+    severity_label VARCHAR(50),                       -- ○
+    description TEXT,                                 -- ○
+    recommendation TEXT,                              -- ○
+    requires_professional BOOLEAN DEFAULT FALSE,      -- ○
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id)
+        ON DELETE CASCADE
+);
+
+-- 5. USER_ASSESSMENTS TABLE (Associative Entity)
+CREATE TABLE UserAssessments (
+    user_assessment_id INT PRIMARY KEY AUTO_INCREMENT, -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    assessment_id INT NOT NULL,                        -- ◉ FK
+    total_score INT,                                   -- ○
+    severity_id INT,                                   -- ◉ FK
+    taken_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,      -- ○
+    completion_time_seconds INT,                       -- ○
+    is_completed BOOLEAN DEFAULT FALSE,                -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id),
+    FOREIGN KEY (severity_id) REFERENCES SeverityLevels(severity_id)
+);
+
+-- 6. USER_ASSESSMENT_RESPONSES TABLE (Weak Entity - Double Rectangle)
+CREATE TABLE UserAssessmentResponses (
+    response_id INT PRIMARY KEY AUTO_INCREMENT,        -- ◉ PK
+    user_assessment_id INT NOT NULL,                   -- ◉ FK (Identifying)
+    question_id INT NOT NULL,                          -- ◉ FK
+    response_value INT CHECK (response_value >= 0 AND response_value <= 3),
+    response_text VARCHAR(100),                        -- ○
+    FOREIGN KEY (user_assessment_id) REFERENCES UserAssessments(user_assessment_id)
+        ON DELETE CASCADE,                             -- Identifying Relationship
+    FOREIGN KEY (question_id) REFERENCES AssessmentQuestions(question_id)
+);
+
+-- 7. DIAGNOSES TABLE (Strong Entity)
+CREATE TABLE Diagnoses (
+    diagnosis_id INT PRIMARY KEY AUTO_INCREMENT,       -- ◉ PK
+    name VARCHAR(200) NOT NULL,                        -- ○
+    code VARCHAR(20),                                  -- ○ (ICD-10)
+    category VARCHAR(100),                             -- ○
+    description TEXT,                                  -- ○
+    symptoms TEXT,                                     -- ○
+    treatment_options TEXT                             -- ○
+);
+
+-- 8. ASSESSMENT_DIAGNOSES TABLE (Junction/Associative Entity for M:N)
+CREATE TABLE AssessmentDiagnoses (
+    assessment_id INT NOT NULL,                        -- ◉ PFK
+    diagnosis_id INT NOT NULL,                         -- ◉ PFK
+    PRIMARY KEY (assessment_id, diagnosis_id),         -- Composite PK
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id),
+    FOREIGN KEY (diagnosis_id) REFERENCES Diagnoses(diagnosis_id)
+);
+
+-- 9. USER_DIAGNOSES TABLE (Associative Entity)
+CREATE TABLE UserDiagnoses (
+    user_diagnosis_id INT PRIMARY KEY AUTO_INCREMENT,  -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    diagnosis_id INT NOT NULL,                         -- ◉ FK
+    user_assessment_id INT,                            -- ◉ FK (optional)
+    severity ENUM('mild', 'moderate', 'severe'),       -- ○
+    diagnosed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- ○
+    is_active BOOLEAN DEFAULT TRUE,                    -- ○
+    notes TEXT,                                        -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (diagnosis_id) REFERENCES Diagnoses(diagnosis_id),
+    FOREIGN KEY (user_assessment_id) REFERENCES UserAssessments(user_assessment_id)
+);
+
+-- 10. THERAPISTS TABLE (Strong Entity)
+CREATE TABLE Therapists (
+    therapist_id INT PRIMARY KEY AUTO_INCREMENT,       -- ◉ PK
+    user_id INT NOT NULL UNIQUE,                       -- ◉ FK (1:1 with Users)
+    license_number VARCHAR(100) UNIQUE NOT NULL,       -- ○ Unique
+    specialization VARCHAR(255),                       -- ○
+    years_experience INT,                              -- ○
+    hourly_rate DECIMAL(10, 2),                        -- ○
+    bio TEXT,                                          -- ○
+    is_verified BOOLEAN DEFAULT FALSE,                 -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 11. APPOINTMENTS TABLE (Associative Entity)
+CREATE TABLE Appointments (
+    appointment_id INT PRIMARY KEY AUTO_INCREMENT,     -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    therapist_id INT NOT NULL,                         -- ◉ FK
+    scheduled_at DATETIME NOT NULL,                    -- ○
+    duration_minutes INT DEFAULT 60,                   -- ○
+    status ENUM('scheduled', 'completed', 'cancelled', 'no_show') 
+           DEFAULT 'scheduled',                        -- ○
+    notes TEXT,                                        -- ○
+    meeting_link VARCHAR(500),                         -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (therapist_id) REFERENCES Therapists(therapist_id)
+);
+
+-- 12. MOOD_ENTRIES TABLE (Strong Entity)
+CREATE TABLE MoodEntries (
+    entry_id INT PRIMARY KEY AUTO_INCREMENT,           -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    mood_level INT CHECK (mood_level >= 1 AND mood_level <= 10),
+    mood_type ENUM('happy', 'sad', 'anxious', 'calm', 'angry', 'neutral',
+                   'excited', 'stressed', 'hopeful', 'tired'),
+    notes TEXT,                                        -- ○
+    entry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 13. JOURNAL_ENTRIES TABLE (Strong Entity)
+CREATE TABLE JournalEntries (
+    journal_id INT PRIMARY KEY AUTO_INCREMENT,         -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    title VARCHAR(255),                                -- ○
+    content TEXT NOT NULL,                             -- ○
+    is_private BOOLEAN DEFAULT TRUE,                   -- ○
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    -- ○
+    updated_at TIMESTAMP,                              -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 14. GOALS TABLE (Strong Entity)
+CREATE TABLE Goals (
+    goal_id INT PRIMARY KEY AUTO_INCREMENT,            -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    title VARCHAR(255) NOT NULL,                       -- ○
+    description TEXT,                                  -- ○
+    target_date DATE,                                  -- ○
+    status ENUM('active', 'completed', 'abandoned') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 15. EMERGENCY_CONTACTS TABLE (Strong Entity)
+CREATE TABLE EmergencyContacts (
+    contact_id INT PRIMARY KEY AUTO_INCREMENT,         -- ◉ PK
+    user_id INT NOT NULL,                              -- ◉ FK
+    name VARCHAR(200) NOT NULL,                        -- ○
+    relationship VARCHAR(100),                         -- ○
+    phone VARCHAR(20) NOT NULL,                        -- ○
+    is_primary BOOLEAN DEFAULT FALSE,                  -- ○
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 16. RESOURCES TABLE (Strong Entity)
+CREATE TABLE Resources (
+    resource_id INT PRIMARY KEY AUTO_INCREMENT,        -- ◉ PK
+    title VARCHAR(255) NOT NULL,                       -- ○
+    description TEXT,                                  -- ○
+    resource_type ENUM('article', 'video', 'audio', 'exercise', 'meditation'),
+    content_url VARCHAR(500),                          -- ○
+    category VARCHAR(100),                             -- ○
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP     -- ○
+);
+
+-- 17. USER_RESOURCES TABLE (Junction/Associative Entity for M:N)
+CREATE TABLE UserResources (
+    user_id INT NOT NULL,                              -- ◉ PFK
+    resource_id INT NOT NULL,                          -- ◉ PFK
+    is_bookmarked BOOLEAN DEFAULT FALSE,               -- ○ (Relationship attribute)
+    completed_at TIMESTAMP,                            -- ○ (Relationship attribute)
+    PRIMARY KEY (user_id, resource_id),                -- Composite PK
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (resource_id) REFERENCES Resources(resource_id) ON DELETE CASCADE
+);
+
+
+================================================================================
+                         SAMPLE DATA INSERTS
+================================================================================
+
+-- Insert GAD-7 Assessment
+INSERT INTO Assessments (name, full_name, description, category, total_questions, max_score)
+VALUES ('GAD-7', 'Generalized Anxiety Disorder 7-item scale', 
+        'A brief measure for assessing generalized anxiety disorder', 
+        'anxiety', 7, 21);
+
+-- Insert PHQ-9 Assessment  
+INSERT INTO Assessments (name, full_name, description, category, total_questions, max_score)
+VALUES ('PHQ-9', 'Patient Health Questionnaire-9', 
+        'A multipurpose instrument for screening, diagnosing, and measuring depression severity', 
+        'depression', 9, 27);
+
+-- Insert GAD-7 Severity Levels
+INSERT INTO SeverityLevels (assessment_id, min_score, max_score, severity_label, 
+                            recommendation, requires_professional) VALUES
+(1, 0, 4, 'Minimal Anxiety', 'Continue self-care practices and stress management', FALSE),
+(1, 5, 9, 'Mild Anxiety', 'Monitor symptoms, consider counseling or support groups', FALSE),
+(1, 10, 14, 'Moderate Anxiety', 'Professional consultation recommended', TRUE),
+(1, 15, 21, 'Severe Anxiety', 'Immediate professional intervention needed', TRUE);
+
+-- Insert PHQ-9 Severity Levels
+INSERT INTO SeverityLevels (assessment_id, min_score, max_score, severity_label,
+                            recommendation, requires_professional) VALUES
+(2, 0, 4, 'Minimal Depression', 'Self-care and healthy lifestyle recommended', FALSE),
+(2, 5, 9, 'Mild Depression', 'Watchful waiting, consider supportive counseling', FALSE),
+(2, 10, 14, 'Moderate Depression', 'Treatment plan with therapy recommended', TRUE),
+(2, 15, 19, 'Moderately Severe', 'Active treatment with antidepressants and/or therapy', TRUE),
+(2, 20, 27, 'Severe Depression', 'Immediate intervention and medication evaluation', TRUE);
+
+-- Insert Diagnoses
+INSERT INTO Diagnoses (name, code, category, description) VALUES
+('Generalized Anxiety Disorder', 'F41.1', 'Anxiety', 
+ 'Excessive worry about everyday matters that is difficult to control'),
+('Major Depressive Disorder', 'F32.1', 'Depression', 
+ 'Persistent feelings of sadness and loss of interest affecting daily life'),
+('Post-Traumatic Stress Disorder', 'F43.10', 'Trauma', 
+ 'Condition triggered by experiencing or witnessing a terrifying event'),
+('Panic Disorder', 'F41.0', 'Anxiety', 
+ 'Recurrent unexpected panic attacks with intense fear');
+
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
+
+Document Created: 2 February 2026
+Version: 2.0 (Updated with proper ER notation)
+Platform: Clarity - Mental Health & Wellness Application
+
+Symbol Legend Summary:
+  ┌─────────┐  Rectangle      = Strong Entity
+  ╔═════════╗  Double Rect.   = Weak Entity
+  ○          Circle          = Simple Attribute
+  ◉          Filled Circle   = Primary Key
+  ◇          Diamond         = Relationship
+  ◆◆         Double Diamond  = Identifying Relationship
+  ═══════    Double Line     = Total Participation
+  ───────    Single Line     = Partial Participation
+  ──────►    Arrow           = Points to "One" side
+
+For questions or updates, refer to the development team.
+================================================================================
+
+
+================================================================================
+                    2. ENTITY DEFINITIONS WITH ATTRIBUTES
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                              ENTITY: USERS                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                          ┌─────────────────┐                                 │
+│                          │      USERS      │                                 │
+│                          └────────┬────────┘                                 │
+│                                   │                                          │
+│           ┌───────────────────────┼───────────────────────┐                  │
+│           │           │           │           │           │                  │
+│       ╭───┴───╮   ╭───┴───╮   ╭───┴───╮   ╭───┴───╮   ╭───┴───╮             │
+│       │user_id│   │ email │   │ pass  │   │ fname │   │ lname │             │
+│       │  PK   │   │  UQ   │   │ _hash │   │       │   │       │             │
+│       ╰───────╯   ╰───────╯   ╰───────╯   ╰───────╯   ╰───────╯             │
+│           │           │           │           │           │                  │
+│       ╭───┴───╮   ╭───┴───╮   ╭───┴───╮   ╭───┴───╮   ╭───┴───╮             │
+│       │  dob  │   │gender │   │ phone │   │profile│   │created│             │
+│       │       │   │       │   │       │   │ _pic  │   │ _at   │             │
+│       ╰───────╯   ╰───────╯   ╰───────╯   ╰───────╯   ╰───────╯             │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • user_id        : INT, PRIMARY KEY, AUTO_INCREMENT                        │
+│  • email          : VARCHAR(255), UNIQUE, NOT NULL                          │
+│  • password_hash  : VARCHAR(255), NOT NULL                                  │
+│  • first_name     : VARCHAR(100), NOT NULL                                  │
+│  • last_name      : VARCHAR(100)                                            │
+│  • date_of_birth  : DATE                                                    │
+│  • gender         : ENUM('male','female','other','prefer_not_to_say')       │
+│  • phone          : VARCHAR(20)                                             │
+│  • profile_picture: VARCHAR(500)                                            │
+│  • created_at     : TIMESTAMP, DEFAULT CURRENT_TIMESTAMP                    │
+│  • last_login     : TIMESTAMP                                               │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           ENTITY: ASSESSMENTS                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                        ┌─────────────────────┐                               │
+│                        │     ASSESSMENTS     │                               │
+│                        └──────────┬──────────┘                               │
+│                                   │                                          │
+│         ┌─────────────────────────┼─────────────────────────┐                │
+│         │           │             │             │           │                │
+│     ╭───┴───╮   ╭───┴───╮    ╭────┴────╮   ╭────┴────╮  ╭───┴───╮           │
+│     │assess │   │ name  │    │full_name│   │  desc   │  │ categ │           │
+│     │ment_id│   │       │    │         │   │ription │  │  ory  │           │
+│     │  PK   │   │       │    │         │   │         │  │       │           │
+│     ╰───────╯   ╰───────╯    ╰─────────╯   ╰─────────╯  ╰───────╯           │
+│         │           │             │                                          │
+│     ╭───┴───╮   ╭───┴───╮    ╭────┴────╮                                    │
+│     │total_ │   │ max_  │    │time_lim │                                    │
+│     │ques   │   │ score │    │it_mins  │                                    │
+│     ╰───────╯   ╰───────╯    ╰─────────╯                                    │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • assessment_id      : INT, PRIMARY KEY, AUTO_INCREMENT                    │
+│  • name               : VARCHAR(100), NOT NULL  (e.g., 'GAD-7', 'PHQ-9')    │
+│  • full_name          : VARCHAR(255)                                        │
+│  • description        : TEXT                                                │
+│  • category           : ENUM('anxiety','depression','stress','ptsd',        │
+│                              'ocd','bipolar','substance','sleep')           │
+│  • total_questions    : INT                                                 │
+│  • max_score          : INT                                                 │
+│  • time_limit_minutes : INT                                                 │
+│                                                                              │
+│  Sample Data:                                                               │
+│  ┌────────┬─────────────────────────────────────┬───────────┬───────────┐   │
+│  │  Name  │           Full Name                 │ Questions │ Max Score │   │
+│  ├────────┼─────────────────────────────────────┼───────────┼───────────┤   │
+│  │ PHQ-9  │ Patient Health Questionnaire-9      │     9     │    27     │   │
+│  │ GAD-7  │ Generalized Anxiety Disorder-7      │     7     │    21     │   │
+│  │ PSS-10 │ Perceived Stress Scale-10           │    10     │    40     │   │
+│  │ PCL-5  │ PTSD Checklist for DSM-5            │    20     │    80     │   │
+│  │ ISI    │ Insomnia Severity Index             │     7     │    28     │   │
+│  │ AUDIT  │ Alcohol Use Disorders Test          │    10     │    40     │   │
+│  └────────┴─────────────────────────────────────┴───────────┴───────────┘   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                       ENTITY: ASSESSMENT_QUESTIONS                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                    ┌───────────────────────────┐                             │
+│                    │   ASSESSMENT_QUESTIONS    │                             │
+│                    └─────────────┬─────────────┘                             │
+│                                  │                                           │
+│           ┌──────────────────────┼──────────────────────┐                    │
+│           │          │           │           │          │                    │
+│       ╭───┴───╮  ╭ ─ ┴ ─ ╮   ╭───┴───╮   ╭───┴───╮  ╭───┴───╮               │
+│       │ques  │  │assess │   │ques   │   │ques   │  │ max_  │               │
+│       │tion  │  │ment   │   │tion   │   │tion   │  │points │               │
+│       │ _id  │  │ _id   │   │ _num  │   │ _text │  │       │               │
+│       │ PK   │  │ FK    │   │       │   │       │  │       │               │
+│       ╰──────╯  ╰ ─ ─ ─ ╯   ╰───────╯   ╰───────╯  ╰───────╯               │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • question_id    : INT, PRIMARY KEY, AUTO_INCREMENT                        │
+│  • assessment_id  : INT, FOREIGN KEY → Assessments(assessment_id)           │
+│  • question_number: INT, NOT NULL                                           │
+│  • question_text  : TEXT, NOT NULL                                          │
+│  • max_points     : INT, DEFAULT 3                                          │
+│                                                                              │
+│  Sample GAD-7 Questions:                                                    │
+│  ┌────┬────────────────────────────────────────────────────────────────┐    │
+│  │ Q# │                        Question Text                           │    │
+│  ├────┼────────────────────────────────────────────────────────────────┤    │
+│  │  1 │ Feeling nervous, anxious, or on edge                           │    │
+│  │  2 │ Not being able to stop or control worrying                     │    │
+│  │  3 │ Worrying too much about different things                       │    │
+│  │  4 │ Trouble relaxing                                               │    │
+│  │  5 │ Being so restless that it's hard to sit still                  │    │
+│  │  6 │ Becoming easily annoyed or irritable                           │    │
+│  │  7 │ Feeling afraid as if something awful might happen              │    │
+│  └────┴────────────────────────────────────────────────────────────────┘    │
+│                                                                              │
+│  Response Options (0-3 scale):                                              │
+│  ┌───────┬──────────────────────────────┐                                   │
+│  │ Value │         Response Text        │                                   │
+│  ├───────┼──────────────────────────────┤                                   │
+│  │   0   │ Not at all                   │                                   │
+│  │   1   │ Several days                 │                                   │
+│  │   2   │ More than half the days      │                                   │
+│  │   3   │ Nearly every day             │                                   │
+│  └───────┴──────────────────────────────┘                                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         ENTITY: SEVERITY_LEVELS                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                      ┌─────────────────────────┐                             │
+│                      │     SEVERITY_LEVELS     │                             │
+│                      └────────────┬────────────┘                             │
+│                                   │                                          │
+│       ┌───────────────────────────┼───────────────────────────┐              │
+│       │       │       │           │           │       │       │              │
+│   ╭───┴───╮╭──┴──╮╭───┴───╮   ╭───┴───╮   ╭───┴───╮╭──┴──╮╭───┴───╮         │
+│   │sever │ │ ass │ │ min_ │   │ max_  │   │sever │ │desc │ │recom │         │
+│   │ity_id│ │ess_ │ │score │   │ score │   │ity_  │ │ rip │ │mend  │         │
+│   │ PK   │ │ id  │ │      │   │       │   │label │ │tion │ │ation │         │
+│   ╰──────╯ │ FK  │ ╰──────╯   ╰───────╯   ╰──────╯ ╰─────╯ ╰──────╯         │
+│            ╰─────╯        │                                                  │
+│                       ╭───┴───╮                                              │
+│                       │requires│                                             │
+│                       │_profes│                                             │
+│                       │sional │                                             │
+│                       ╰───────╯                                              │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • severity_id          : INT, PRIMARY KEY, AUTO_INCREMENT                  │
+│  • assessment_id        : INT, FOREIGN KEY → Assessments(assessment_id)     │
+│  • min_score            : INT, NOT NULL                                     │
+│  • max_score            : INT, NOT NULL                                     │
+│  • severity_label       : VARCHAR(50) ('minimal','mild','moderate',         │
+│                           'moderately_severe','severe')                     │
+│  • description          : TEXT                                              │
+│  • recommendation       : TEXT                                              │
+│  • requires_professional: BOOLEAN, DEFAULT FALSE                            │
+│                                                                              │
+│  GAD-7 Severity Interpretation:                                             │
+│  ┌───────────┬──────────┬──────────────────────────────────────────────┐    │
+│  │   Score   │ Severity │              Recommendation                  │    │
+│  ├───────────┼──────────┼──────────────────────────────────────────────┤    │
+│  │   0 - 4   │ Minimal  │ Continue self-care practices                 │    │
+│  │   5 - 9   │ Mild     │ Monitor symptoms, consider counseling        │    │
+│  │  10 - 14  │ Moderate │ Professional consultation recommended        │    │
+│  │  15 - 21  │ Severe   │ Immediate professional intervention needed   │    │
+│  └───────────┴──────────┴──────────────────────────────────────────────┘    │
+│                                                                              │
+│  PHQ-9 Severity Interpretation:                                             │
+│  ┌───────────┬────────────────────┬────────────────────────────────────┐    │
+│  │   Score   │      Severity      │          Recommendation            │    │
+│  ├───────────┼────────────────────┼────────────────────────────────────┤    │
+│  │   0 - 4   │ Minimal Depression │ Self-care, lifestyle changes       │    │
+│  │   5 - 9   │ Mild Depression    │ Watchful waiting, supportive care  │    │
+│  │  10 - 14  │ Moderate           │ Treatment plan consideration       │    │
+│  │  15 - 19  │ Moderately Severe  │ Active treatment with therapy      │    │
+│  │  20 - 27  │ Severe Depression  │ Immediate intervention required    │    │
+│  └───────────┴────────────────────┴────────────────────────────────────┘    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         ENTITY: USER_ASSESSMENTS                             │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                      ┌─────────────────────────┐                             │
+│                      │     USER_ASSESSMENTS    │                             │
+│                      └────────────┬────────────┘                             │
+│                                   │                                          │
+│       ┌───────────────────────────┼───────────────────────────┐              │
+│       │       │       │           │           │       │       │              │
+│   ╭───┴───╮╭ ─┴─ ╮╭ ─ ┴ ─ ╮   ╭───┴───╮   ╭ ─ ┴ ─ ╮╭──┴──╮╭───┴───╮         │
+│   │user_  │ │user│ │assess│   │total_ │   │sever │ │taken│ │compl │         │
+│   │assess │ │ _id│ │ment_ │   │ score │   │ity_  │ │ _at │ │etion │         │
+│   │ment_id│ │ FK │ │  id  │   │       │   │  id  │ │     │ │_time │         │
+│   │  PK   │ ╰ ─ ─╯ │  FK  │   ╰───────╯   │  FK  │ ╰─────╯ ╰──────╯         │
+│   ╰───────╯        ╰ ─ ─ ─╯               ╰ ─ ─ ─╯                           │
+│                                       │                                      │
+│                                   ╭───┴───╮                                  │
+│                                   │is_com │                                  │
+│                                   │pleted │                                  │
+│                                   ╰───────╯                                  │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • user_assessment_id     : INT, PRIMARY KEY, AUTO_INCREMENT                │
+│  • user_id                : INT, FOREIGN KEY → Users(user_id)               │
+│  • assessment_id          : INT, FOREIGN KEY → Assessments(assessment_id)   │
+│  • total_score            : INT                                             │
+│  • severity_id            : INT, FOREIGN KEY → SeverityLevels(severity_id)  │
+│  • taken_at               : TIMESTAMP, DEFAULT CURRENT_TIMESTAMP            │
+│  • completion_time_seconds: INT                                             │
+│  • is_completed           : BOOLEAN, DEFAULT FALSE                          │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                     ENTITY: USER_ASSESSMENT_RESPONSES                        │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                  ┌───────────────────────────────────┐                       │
+│                  │    USER_ASSESSMENT_RESPONSES      │                       │
+│                  └─────────────────┬─────────────────┘                       │
+│                                    │                                         │
+│           ┌────────────────────────┼────────────────────────┐                │
+│           │            │           │           │            │                │
+│       ╭───┴───╮    ╭ ─ ┴ ─ ╮   ╭ ─ ┴ ─ ╮   ╭───┴───╮    ╭───┴───╮           │
+│       │respon │    │ user_ │   │ques  │   │respon │    │respon │           │
+│       │ se_id │    │assess │   │tion  │   │ se_   │    │ se_   │           │
+│       │  PK   │    │ment_id│   │ _id  │   │ value │    │ text  │           │
+│       ╰───────╯    │  FK   │   │  FK  │   ╰───────╯    ╰───────╯           │
+│                    ╰ ─ ─ ─ ╯   ╰ ─ ─ ─╯                                     │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • response_id       : INT, PRIMARY KEY, AUTO_INCREMENT                     │
+│  • user_assessment_id: INT, FK → UserAssessments(user_assessment_id)        │
+│  • question_id       : INT, FK → AssessmentQuestions(question_id)           │
+│  • response_value    : INT, CHECK (0-3)                                     │
+│  • response_text     : VARCHAR(100) ('Not at all', 'Several days', etc.)    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            ENTITY: DIAGNOSES                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                         ┌─────────────────┐                                  │
+│                         │    DIAGNOSES    │                                  │
+│                         └────────┬────────┘                                  │
+│                                  │                                           │
+│         ┌────────────────────────┼────────────────────────┐                  │
+│         │        │       │       │       │        │       │                  │
+│     ╭───┴───╮╭───┴───╮╭──┴──╮╭───┴───╮╭──┴──╮╭────┴────╮╭─┴──╮              │
+│     │diagno│ │ name  │ │code │ │categ │ │desc │ │symptoms │ │trea│              │
+│     │sis_id│ │       │ │ICD10│ │ ory  │ │ rip │ │         │ │tmen│              │
+│     │  PK  │ │       │ │     │ │      │ │tion │ │         │ │ t  │              │
+│     ╰──────╯ ╰───────╯ ╰─────╯ ╰──────╯ ╰─────╯ ╰─────────╯ ╰────╯              │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • diagnosis_id    : INT, PRIMARY KEY, AUTO_INCREMENT                       │
+│  • name            : VARCHAR(200), NOT NULL                                 │
+│  • code            : VARCHAR(20) (ICD-10 code like 'F41.1', 'F32.1')        │
+│  • category        : VARCHAR(100)                                           │
+│  • description     : TEXT                                                   │
+│  • symptoms        : TEXT                                                   │
+│  • treatment_options: TEXT                                                  │
+│                                                                              │
+│  Sample Diagnoses:                                                          │
+│  ┌──────────┬─────────────────────────────────┬─────────────────┐           │
+│  │ ICD Code │            Diagnosis            │    Category     │           │
+│  ├──────────┼─────────────────────────────────┼─────────────────┤           │
+│  │  F41.1   │ Generalized Anxiety Disorder    │ Anxiety         │           │
+│  │  F32.1   │ Major Depressive Disorder       │ Depression      │           │
+│  │  F43.10  │ Post-Traumatic Stress Disorder  │ Trauma          │           │
+│  │  F42.2   │ Obsessive-Compulsive Disorder   │ OCD             │           │
+│  │  F31.9   │ Bipolar Disorder                │ Mood            │           │
+│  │  F51.01  │ Primary Insomnia                │ Sleep           │           │
+│  │  F10.20  │ Alcohol Use Disorder            │ Substance       │           │
+│  └──────────┴─────────────────────────────────┴─────────────────┘           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                          ENTITY: USER_DIAGNOSES                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                       ┌───────────────────────┐                              │
+│                       │     USER_DIAGNOSES    │                              │
+│                       └───────────┬───────────┘                              │
+│                                   │                                          │
+│       ┌───────────────────────────┼───────────────────────────┐              │
+│       │       │       │           │           │       │       │              │
+│   ╭───┴───╮╭ ─┴─ ╮╭ ─ ┴ ─ ╮   ╭ ─ ┴ ─ ╮   ╭───┴───╮╭──┴──╮╭───┴───╮         │
+│   │user_  │ │user│ │diagno│   │user_  │   │sever │ │diag │ │is_   │         │
+│   │diagno │ │ _id│ │ sis_ │   │assess │   │ ity  │ │nosed│ │active│         │
+│   │sis_id │ │ FK │ │  id  │   │ment_id│   │      │ │ _at │ │      │         │
+│   │  PK   │ ╰ ─ ─╯ │  FK  │   │  FK   │   ╰──────╯ ╰─────╯ ╰──────╯         │
+│   ╰───────╯        ╰ ─ ─ ─╯   ╰ ─ ─ ─ ╯       │                              │
+│                                           ╭───┴───╮                          │
+│                                           │ notes │                          │
+│                                           ╰───────╯                          │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • user_diagnosis_id : INT, PRIMARY KEY, AUTO_INCREMENT                     │
+│  • user_id           : INT, FOREIGN KEY → Users(user_id)                    │
+│  • diagnosis_id      : INT, FOREIGN KEY → Diagnoses(diagnosis_id)           │
+│  • user_assessment_id: INT, FOREIGN KEY → UserAssessments                   │
+│  • severity          : ENUM('mild', 'moderate', 'severe')                   │
+│  • diagnosed_at      : TIMESTAMP                                            │
+│  • is_active         : BOOLEAN, DEFAULT TRUE                                │
+│  • notes             : TEXT                                                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           ENTITY: THERAPISTS                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                         ┌─────────────────┐                                  │
+│                         │   THERAPISTS    │                                  │
+│                         └────────┬────────┘                                  │
+│                                  │                                           │
+│         ┌────────────────────────┼────────────────────────┐                  │
+│         │        │       │       │       │        │       │                  │
+│     ╭───┴───╮╭ ─ ┴ ─ ╮╭──┴──╮╭───┴───╮╭──┴──╮╭────┴────╮╭─┴──╮              │
+│     │therap│ │ user  │ │licen│ │specia│ │years│ │ hourly  │ │ bio│              │
+│     │ist_id│ │  _id  │ │se_no│ │lizat │ │_exp │ │  _rate  │ │    │              │
+│     │  PK  │ │  FK   │ │  UQ │ │ ion  │ │     │ │         │ │    │              │
+│     ╰──────╯ ╰ ─ ─ ─ ╯ ╰─────╯ ╰──────╯ ╰─────╯ ╰─────────╯ ╰────╯              │
+│                                       │                                      │
+│                                   ╭───┴───╮                                  │
+│                                   │is_ver │                                  │
+│                                   │ified  │                                  │
+│                                   ╰───────╯                                  │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • therapist_id     : INT, PRIMARY KEY, AUTO_INCREMENT                      │
+│  • user_id          : INT, FOREIGN KEY → Users(user_id)                     │
+│  • license_number   : VARCHAR(100), UNIQUE, NOT NULL                        │
+│  • specialization   : VARCHAR(255)                                          │
+│  • years_experience : INT                                                   │
+│  • hourly_rate      : DECIMAL(10,2)                                         │
+│  • bio              : TEXT                                                  │
+│  • is_verified      : BOOLEAN, DEFAULT FALSE                                │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                          ENTITY: APPOINTMENTS                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                        ┌───────────────────┐                                 │
+│                        │   APPOINTMENTS    │                                 │
+│                        └─────────┬─────────┘                                 │
+│                                  │                                           │
+│       ┌──────────────────────────┼──────────────────────────┐                │
+│       │       │       │          │          │       │       │                │
+│   ╭───┴───╮╭ ─┴─ ╮╭ ─ ┴ ─ ╮  ╭───┴───╮  ╭───┴───╮╭──┴──╮╭───┴───╮           │
+│   │appoint│ │user│ │therap│  │schedu │  │durat │ │stat │ │notes │           │
+│   │ment_id│ │ _id│ │ ist_ │  │led_at │  │ion_  │ │ us  │ │      │           │
+│   │  PK   │ │ FK │ │  id  │  │       │  │mins  │ │     │ │      │           │
+│   ╰───────╯ ╰ ─ ─╯ │  FK  │  ╰───────╯  ╰──────╯ ╰─────╯ ╰──────╯           │
+│                    ╰ ─ ─ ─╯      │                                           │
+│                              ╭───┴───╮                                       │
+│                              │meeting│                                       │
+│                              │ _link │                                       │
+│                              ╰───────╯                                       │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • appointment_id  : INT, PRIMARY KEY, AUTO_INCREMENT                       │
+│  • user_id         : INT, FOREIGN KEY → Users(user_id)                      │
+│  • therapist_id    : INT, FOREIGN KEY → Therapists(therapist_id)            │
+│  • scheduled_at    : DATETIME, NOT NULL                                     │
+│  • duration_minutes: INT, DEFAULT 60                                        │
+│  • status          : ENUM('scheduled','completed','cancelled','no_show')    │
+│  • notes           : TEXT                                                   │
+│  • meeting_link    : VARCHAR(500)                                           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                          ENTITY: MOOD_ENTRIES                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                        ┌───────────────────┐                                 │
+│                        │    MOOD_ENTRIES   │                                 │
+│                        └─────────┬─────────┘                                 │
+│                                  │                                           │
+│           ┌──────────────────────┼──────────────────────┐                    │
+│           │          │           │           │          │                    │
+│       ╭───┴───╮  ╭ ─ ┴ ─ ╮   ╭───┴───╮   ╭───┴───╮  ╭───┴───╮               │
+│       │entry  │  │ user  │   │ mood_ │   │ mood_ │  │ notes │               │
+│       │ _id   │  │  _id  │   │ level │   │ type  │  │       │               │
+│       │  PK   │  │  FK   │   │ (1-10)│   │       │  │       │               │
+│       ╰───────╯  ╰ ─ ─ ─ ╯   ╰───────╯   ╰───────╯  ╰───────╯               │
+│                                  │                                           │
+│                              ╭───┴───╮                                       │
+│                              │entry_ │                                       │
+│                              │ date  │                                       │
+│                              ╰───────╯                                       │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • entry_id   : INT, PRIMARY KEY, AUTO_INCREMENT                            │
+│  • user_id    : INT, FOREIGN KEY → Users(user_id)                           │
+│  • mood_level : INT, CHECK (1 <= mood_level <= 10)                          │
+│  • mood_type  : ENUM('happy','sad','anxious','calm','angry','neutral',      │
+│                      'excited','stressed','hopeful','tired')                │
+│  • notes      : TEXT                                                        │
+│  • entry_date : TIMESTAMP, DEFAULT CURRENT_TIMESTAMP                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                         ENTITY: JOURNAL_ENTRIES                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                       ┌───────────────────────┐                              │
+│                       │    JOURNAL_ENTRIES    │                              │
+│                       └───────────┬───────────┘                              │
+│                                   │                                          │
+│         ┌─────────────────────────┼─────────────────────────┐                │
+│         │       │       │         │         │       │       │                │
+│     ╭───┴───╮╭ ─┴─ ╮╭───┴───╮ ╭───┴───╮ ╭───┴───╮╭──┴──╮╭───┴───╮           │
+│     │journa│ │user│ │ title │ │content│ │is_pri │ │crea │ │upda │           │
+│     │ l_id │ │ _id│ │       │ │       │ │ vate  │ │ted  │ │ted  │           │
+│     │  PK  │ │ FK │ ╰───────╯ ╰───────╯ ╰───────╯ │ _at │ │ _at │           │
+│     ╰──────╯ ╰ ─ ─╯                               ╰─────╯ ╰─────╯           │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • journal_id : INT, PRIMARY KEY, AUTO_INCREMENT                            │
+│  • user_id    : INT, FOREIGN KEY → Users(user_id)                           │
+│  • title      : VARCHAR(255)                                                │
+│  • content    : TEXT, NOT NULL                                              │
+│  • is_private : BOOLEAN, DEFAULT TRUE                                       │
+│  • created_at : TIMESTAMP, DEFAULT CURRENT_TIMESTAMP                        │
+│  • updated_at : TIMESTAMP                                                   │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                             ENTITY: GOALS                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                           ┌─────────────┐                                    │
+│                           │    GOALS    │                                    │
+│                           └──────┬──────┘                                    │
+│                                  │                                           │
+│         ┌────────────────────────┼────────────────────────┐                  │
+│         │        │       │       │       │        │       │                  │
+│     ╭───┴───╮╭ ─ ┴ ─ ╮╭──┴──╮╭───┴───╮╭──┴──╮╭────┴────╮╭─┴──╮              │
+│     │goal  │ │ user  │ │title│ │ desc  │ │targ │ │ status  │ │cre │              │
+│     │ _id  │ │  _id  │ │     │ │ ripti │ │et_  │ │         │ │ated│              │
+│     │  PK  │ │  FK   │ │     │ │  on   │ │date │ │         │ │_at │              │
+│     ╰──────╯ ╰ ─ ─ ─ ╯ ╰─────╯ ╰───────╯ ╰─────╯ ╰─────────╯ ╰────╯              │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • goal_id    : INT, PRIMARY KEY, AUTO_INCREMENT                            │
+│  • user_id    : INT, FOREIGN KEY → Users(user_id)                           │
+│  • title      : VARCHAR(255), NOT NULL                                      │
+│  • description: TEXT                                                        │
+│  • target_date: DATE                                                        │
+│  • status     : ENUM('active', 'completed', 'abandoned')                    │
+│  • created_at : TIMESTAMP, DEFAULT CURRENT_TIMESTAMP                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        ENTITY: EMERGENCY_CONTACTS                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                     ┌─────────────────────────────┐                          │
+│                     │     EMERGENCY_CONTACTS      │                          │
+│                     └──────────────┬──────────────┘                          │
+│                                    │                                         │
+│           ┌────────────────────────┼────────────────────────┐                │
+│           │            │           │           │            │                │
+│       ╭───┴───╮    ╭ ─ ┴ ─ ╮   ╭───┴───╮   ╭───┴───╮    ╭───┴───╮           │
+│       │contac │    │ user  │   │ name  │   │relati │    │ phone │           │
+│       │ t_id  │    │  _id  │   │       │   │onship │    │       │           │
+│       │  PK   │    │  FK   │   ╰───────╯   ╰───────╯    ╰───────╯           │
+│       ╰───────╯    ╰ ─ ─ ─ ╯       │                                        │
+│                                ╭───┴───╮                                     │
+│                                │is_pri │                                     │
+│                                │ mary  │                                     │
+│                                ╰───────╯                                     │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • contact_id  : INT, PRIMARY KEY, AUTO_INCREMENT                           │
+│  • user_id     : INT, FOREIGN KEY → Users(user_id)                          │
+│  • name        : VARCHAR(200), NOT NULL                                     │
+│  • relationship: VARCHAR(100)                                               │
+│  • phone       : VARCHAR(20), NOT NULL                                      │
+│  • is_primary  : BOOLEAN, DEFAULT FALSE                                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                            ENTITY: RESOURCES                                 │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│                          ┌───────────────┐                                   │
+│                          │   RESOURCES   │                                   │
+│                          └───────┬───────┘                                   │
+│                                  │                                           │
+│         ┌────────────────────────┼────────────────────────┐                  │
+│         │        │       │       │       │        │       │                  │
+│     ╭───┴───╮╭───┴───╮╭──┴──╮╭───┴───╮╭──┴──╮╭────┴────╮╭─┴──╮              │
+│     │resour│ │ title │ │desc │ │resour│ │cont │ │category │ │crea│              │
+│     │ ce_id│ │       │ │ rip │ │ ce_  │ │ent_ │ │         │ │ted │              │
+│     │  PK  │ │       │ │tion │ │ type │ │ url │ │         │ │ _at│              │
+│     ╰──────╯ ╰───────╯ ╰─────╯ ╰──────╯ ╰─────╯ ╰─────────╯ ╰────╯              │
+│                                                                              │
+│  Attributes:                                                                 │
+│  ─────────────────────────────────────────────────────────────────────────  │
+│  • resource_id  : INT, PRIMARY KEY, AUTO_INCREMENT                          │
+│  • title        : VARCHAR(255), NOT NULL                                    │
+│  • description  : TEXT                                                      │
+│  • resource_type: ENUM('article','video','audio','exercise','meditation')   │
+│  • content_url  : VARCHAR(500)                                              │
+│  • category     : VARCHAR(100)                                              │
+│  • created_at   : TIMESTAMP                                                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                         3. RELATIONSHIP DIAGRAM
+================================================================================
+
+  ┌─────────────────────────────────────────────────────────────────────────┐
+  │                      RELATIONSHIP DEFINITIONS                           │
+  └─────────────────────────────────────────────────────────────────────────┘
+
+  ┌─────────┐                     ◇─────────────◇                    ┌─────────────┐
+  │  USERS  │═══════════════════ ◇   TAKES     ◇ ════════════════════│ ASSESSMENTS │
+  └─────────┘       1:N          ◇─────────────◇          N:1        └─────────────┘
+                                       │
+                                       │ Creates
+                                       ▼
+                              ┌─────────────────────┐
+                              │   USER_ASSESSMENTS  │
+                              └─────────────────────┘
+
+
+  ┌─────────────────────┐           ◇───────────◇            ┌────────────────────┐
+  │   USER_ASSESSMENTS  │══════════◇  CONTAINS ◇═══════════ │ ASSESSMENT_QUEST.  │
+  └─────────────────────┘    1:N   ◇───────────◇   N:1      └────────────────────┘
+                                       │
+                                       │ Creates
+                                       ▼
+                          ┌───────────────────────────┐
+                          │ USER_ASSESSMENT_RESPONSES │
+                          └───────────────────────────┘
+
+
+  ┌─────────────────────┐           ◇───────────◇            ┌──────────────────┐
+  │   USER_ASSESSMENTS  │──────────◇  INDICATES ◇───────────│  SEVERITY_LEVELS │
+  └─────────────────────┘    N:1   ◇───────────◇   1:N      └──────────────────┘
+
+
+  ┌─────────────┐           ◇─────────────◇           ┌─────────────┐
+  │ ASSESSMENTS │══════════◇   SCREENS    ◇══════════│  DIAGNOSES  │
+  └─────────────┘    M:N   ◇─────────────◇    M:N    └─────────────┘
+                                 │
+                           (Junction Table)
+                     ┌─────────────────────────┐
+                     │  ASSESSMENT_DIAGNOSES   │
+                     └─────────────────────────┘
+
+
+  ┌─────────┐           ◇───────────────◇           ┌─────────────┐
+  │  USERS  │══════════◇  DIAGNOSED_AS ◇══════════│  DIAGNOSES  │
+  └─────────┘    1:N   ◇───────────────◇    M:N   └─────────────┘
+                                 │
+                                 ▼
+                        ┌─────────────────┐
+                        │  USER_DIAGNOSES │
+                        └─────────────────┘
+
+
+  ┌─────────┐           ◇───────────◇           ┌─────────────┐
+  │  USERS  │══════════◇   LOGS     ◇══════════│ MOOD_ENTRIES│
+  └─────────┘    1:N   ◇───────────◇           └─────────────┘
+
+
+  ┌─────────┐           ◇───────────◇           ┌──────────────────┐
+  │  USERS  │══════════◇  WRITES    ◇══════════│  JOURNAL_ENTRIES │
+  └─────────┘    1:N   ◇───────────◇           └──────────────────┘
+
+
+  ┌─────────┐           ◇───────────◇           ┌─────────────┐
+  │  USERS  │══════════◇   SETS     ◇══════════│    GOALS    │
+  └─────────┘    1:N   ◇───────────◇           └─────────────┘
+
+
+  ┌─────────┐           ◇───────────◇           ┌─────────────────────┐
+  │  USERS  │══════════◇   HAS      ◇══════════│  EMERGENCY_CONTACTS │
+  └─────────┘    1:N   ◇───────────◇           └─────────────────────┘
+
+
+  ┌─────────┐           ◇───────────◇           ┌─────────────────┐
+  │  USERS  │──────────◇  CAN_BE    ◇──────────│   THERAPISTS    │
+  └─────────┘    1:1   ◇───────────◇           └─────────────────┘
+
+
+  ┌─────────┐           ◇───────────◇           ┌───────────────┐
+  │  USERS  │══════════◇   BOOKS    ◇══════════│  APPOINTMENTS │
+  └─────────┘    1:N   ◇───────────◇    N:1    └───────────────┘
+                                                        ║
+                                                        ║
+  ┌─────────────────┐         ◇───────────◇            ║
+  │   THERAPISTS    │════════◇   HAS      ◇════════════╝
+  └─────────────────┘   1:N  ◇───────────◇
+
+
+  ┌─────────┐           ◇───────────◇           ┌─────────────┐
+  │  USERS  │══════════◇  ACCESSES  ◇══════════│  RESOURCES  │
+  └─────────┘    M:N   ◇───────────◇    M:N    └─────────────┘
+                              │
+                        (Junction Table)
+                      ┌─────────────────┐
+                      │  USER_RESOURCES │
+                      └─────────────────┘
+
+
+================================================================================
+                         4. COMPLETE ER DIAGRAM
+================================================================================
+
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│                                                                                          │
+│                              CLARITY MENTAL HEALTH PLATFORM                              │
+│                            COMPLETE ENTITY RELATIONSHIP DIAGRAM                         │
+│                                                                                          │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │   RESOURCES     │
+                                    │─────────────────│
+                                    │ resource_id [PK]│
+                                    │ title           │
+                                    │ description     │
+                                    │ resource_type   │
+                                    │ content_url     │
+                                    │ category        │
+                                    └────────┬────────┘
+                                             │
+                                             │ M:N
+                                             │
+┌─────────────────┐      1:1      ┌──────────┴──────────┐      1:N      ┌─────────────────────┐
+│   THERAPISTS    │◄─────────────│        USERS        │──────────────►│  EMERGENCY_CONTACTS │
+│─────────────────│              │─────────────────────│               │─────────────────────│
+│ therapist_id[PK]│              │ user_id [PK]        │               │ contact_id [PK]     │
+│ user_id [FK]    │              │ email               │               │ user_id [FK]        │
+│ license_number  │              │ password_hash       │               │ name                │
+│ specialization  │              │ first_name          │               │ relationship        │
+│ years_experience│              │ last_name           │               │ phone               │
+│ hourly_rate     │              │ date_of_birth       │               │ is_primary          │
+│ bio             │              │ gender              │               └─────────────────────┘
+│ is_verified     │              │ phone               │
+└────────┬────────┘              │ profile_picture     │
+         │                       │ created_at          │
+         │                       │ last_login          │
+         │                       └──────────┬──────────┘
+         │                                  │
+         │ 1:N                              │ 1:N
+         │                                  │
+         │      ┌───────────────────────────┼───────────────────────────┐
+         │      │                           │                           │
+         │      ▼                           ▼                           ▼
+         │ ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+         │ │  MOOD_ENTRIES   │      │ JOURNAL_ENTRIES │      │     GOALS       │
+         │ │─────────────────│      │─────────────────│      │─────────────────│
+         │ │ entry_id [PK]   │      │ journal_id [PK] │      │ goal_id [PK]    │
+         │ │ user_id [FK]    │      │ user_id [FK]    │      │ user_id [FK]    │
+         │ │ mood_level      │      │ title           │      │ title           │
+         │ │ mood_type       │      │ content         │      │ description     │
+         │ │ notes           │      │ is_private      │      │ target_date     │
+         │ │ entry_date      │      │ created_at      │      │ status          │
+         │ └─────────────────┘      │ updated_at      │      │ created_at      │
+         │                          └─────────────────┘      └─────────────────┘
+         │
+         │                                  │
+         │                                  │ 1:N
+         │                                  ▼
+         │                       ┌─────────────────────┐       N:1        ┌─────────────────┐
+         │                       │  USER_ASSESSMENTS   │◄────────────────│   ASSESSMENTS   │
+         │                       │─────────────────────│                 │─────────────────│
+         │                       │ user_assessment_id  │                 │ assessment_id   │
+         │                       │ [PK]                │                 │ [PK]            │
+         │                       │ user_id [FK]        │                 │ name            │
+         │                       │ assessment_id [FK]  │                 │ full_name       │
+         │                       │ total_score         │                 │ description     │
+         │                       │ severity_id [FK]    │                 │ category        │
+         │                       │ taken_at            │                 │ total_questions │
+         │                       │ completion_time_sec │                 │ max_score       │
+         │                       │ is_completed        │                 │ time_limit_mins │
+         │                       └──────────┬──────────┘                 └────────┬────────┘
+         │                                  │                                      │
+         │                                  │                                      │ 1:N
+         │                                  │ 1:N                                  │
+         │                                  │                                      ▼
+         │                                  │                          ┌────────────────────────┐
+         │                                  │                          │  ASSESSMENT_QUESTIONS  │
+         │                                  │                          │────────────────────────│
+         │                                  │                          │ question_id [PK]       │
+         │                                  │                          │ assessment_id [FK]     │
+         │                                  │                          │ question_number        │
+         │                                  │                          │ question_text          │
+         │                                  │                          │ max_points             │
+         │                                  │                          └───────────┬────────────┘
+         │                                  │                                      │
+         │                                  ▼                                      │
+         │                   ┌─────────────────────────────┐                       │
+         │                   │  USER_ASSESSMENT_RESPONSES  │◄──────────────────────┘
+         │                   │─────────────────────────────│         N:1
+         │                   │ response_id [PK]            │
+         │                   │ user_assessment_id [FK]     │
+         │                   │ question_id [FK]            │
+         │                   │ response_value              │
+         │                   │ response_text               │
+         │                   └─────────────────────────────┘
+         │
+         │
+         │                                  │
+         │                                  │ N:1
+         │                                  ▼
+         │                       ┌─────────────────────┐      1:N       ┌─────────────────┐
+         │                       │   SEVERITY_LEVELS   │◄──────────────│   ASSESSMENTS   │
+         │                       │─────────────────────│               └─────────────────┘
+         │                       │ severity_id [PK]    │
+         │                       │ assessment_id [FK]  │
+         │                       │ min_score           │
+         │                       │ max_score           │
+         │                       │ severity_label      │
+         │                       │ description         │
+         │                       │ recommendation      │
+         │                       │ requires_professional│
+         │                       └─────────────────────┘
+         │
+         │
+         │                       ┌─────────────────────┐
+         │                       │   USER_DIAGNOSES    │
+         │                       │─────────────────────│
+         │                       │ user_diagnosis_id   │
+         │                       │ [PK]                │
+         │                       │ user_id [FK]        │
+         │                       │ diagnosis_id [FK]   │
+         │                       │ user_assessment_id  │
+         │                       │ [FK]                │
+         │                       │ severity            │
+         │                       │ diagnosed_at        │
+         │                       │ is_active           │
+         │                       │ notes               │
+         │                       └──────────┬──────────┘
+         │                                  │
+         │                                  │ N:1
+         │                                  ▼
+         │                       ┌─────────────────────┐
+         │                       │     DIAGNOSES       │
+         │                       │─────────────────────│
+         │                       │ diagnosis_id [PK]   │
+         │                       │ name                │
+         │                       │ code                │
+         │                       │ category            │
+         │                       │ description         │
+         │                       │ symptoms            │
+         │                       │ treatment_options   │
+         │                       └─────────────────────┘
+         │
+         │
+         └───────────────────────┐
+                                 │ 1:N
+                                 ▼
+                      ┌─────────────────────┐
+                      │    APPOINTMENTS     │
+                      │─────────────────────│
+                      │ appointment_id [PK] │
+                      │ user_id [FK]        │◄───────────┐
+                      │ therapist_id [FK]   │            │ N:1
+                      │ scheduled_at        │            │
+                      │ duration_minutes    │    (from USERS)
+                      │ status              │
+                      │ notes               │
+                      │ meeting_link        │
+                      └─────────────────────┘
+
+
+================================================================================
+                         5. CARDINALITY SUMMARY
+================================================================================
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                           RELATIONSHIP CARDINALITIES                           │
+├─────────────────────┬─────────────────────────┬───────────┬───────────────────┤
+│   Entity 1          │       Entity 2          │   Type    │   Description     │
+├─────────────────────┼─────────────────────────┼───────────┼───────────────────┤
+│ Users               │ MoodEntries             │   1:N     │ User logs moods   │
+│ Users               │ JournalEntries          │   1:N     │ User writes       │
+│ Users               │ Goals                   │   1:N     │ User sets goals   │
+│ Users               │ EmergencyContacts       │   1:N     │ User has contacts │
+│ Users               │ Therapists              │   1:1     │ User can be ther. │
+│ Users               │ UserAssessments         │   1:N     │ User takes tests  │
+│ Users               │ UserDiagnoses           │   1:N     │ User diagnoses    │
+│ Users               │ Appointments            │   1:N     │ User books appts  │
+│ Users               │ Resources               │   M:N     │ Via UserResources │
+├─────────────────────┼─────────────────────────┼───────────┼───────────────────┤
+│ Therapists          │ Appointments            │   1:N     │ Therapist has     │
+├─────────────────────┼─────────────────────────┼───────────┼───────────────────┤
+│ Assessments         │ AssessmentQuestions     │   1:N     │ Test has questions│
+│ Assessments         │ SeverityLevels          │   1:N     │ Test has levels   │
+│ Assessments         │ UserAssessments         │   1:N     │ Test is taken     │
+│ Assessments         │ Diagnoses               │   M:N     │ Via AssessDiag    │
+├─────────────────────┼─────────────────────────┼───────────┼───────────────────┤
+│ UserAssessments     │ UserAssessmentResponses │   1:N     │ Attempt has resp. │
+│ UserAssessments     │ SeverityLevels          │   N:1     │ Has severity      │
+│ UserAssessments     │ UserDiagnoses           │   1:N     │ Leads to diag.    │
+├─────────────────────┼─────────────────────────┼───────────┼───────────────────┤
+│ AssessmentQuestions │ UserAssessmentResponses │   1:N     │ Question answered │
+├─────────────────────┼─────────────────────────┼───────────┼───────────────────┤
+│ Diagnoses           │ UserDiagnoses           │   1:N     │ Condition has     │
+└─────────────────────┴─────────────────────────┴───────────┴───────────────────┘
+
+
+================================================================================
+                         6. SQL SCHEMA REFERENCE
+================================================================================
+
+-- Create Database
+CREATE DATABASE clarity_mental_health;
+USE clarity_mental_health;
+
+-- 1. USERS TABLE
+CREATE TABLE Users (
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100),
+    date_of_birth DATE,
+    gender ENUM('male', 'female', 'other', 'prefer_not_to_say'),
+    phone VARCHAR(20),
+    profile_picture VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP
+);
+
+-- 2. ASSESSMENTS TABLE
+CREATE TABLE Assessments (
+    assessment_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    full_name VARCHAR(255),
+    description TEXT,
+    category ENUM('anxiety', 'depression', 'stress', 'ptsd', 'ocd', 'bipolar', 
+                  'substance', 'sleep'),
+    total_questions INT,
+    max_score INT,
+    time_limit_minutes INT
+);
+
+-- 3. ASSESSMENT_QUESTIONS TABLE
+CREATE TABLE AssessmentQuestions (
+    question_id INT PRIMARY KEY AUTO_INCREMENT,
+    assessment_id INT NOT NULL,
+    question_number INT NOT NULL,
+    question_text TEXT NOT NULL,
+    max_points INT DEFAULT 3,
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id)
+        ON DELETE CASCADE
+);
+
+-- 4. SEVERITY_LEVELS TABLE
+CREATE TABLE SeverityLevels (
+    severity_id INT PRIMARY KEY AUTO_INCREMENT,
+    assessment_id INT NOT NULL,
+    min_score INT NOT NULL,
+    max_score INT NOT NULL,
+    severity_label VARCHAR(50),
+    description TEXT,
+    recommendation TEXT,
+    requires_professional BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id)
+        ON DELETE CASCADE
+);
+
+-- 5. USER_ASSESSMENTS TABLE
+CREATE TABLE UserAssessments (
+    user_assessment_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    assessment_id INT NOT NULL,
+    total_score INT,
+    severity_id INT,
+    taken_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completion_time_seconds INT,
+    is_completed BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id),
+    FOREIGN KEY (severity_id) REFERENCES SeverityLevels(severity_id)
+);
+
+-- 6. USER_ASSESSMENT_RESPONSES TABLE
+CREATE TABLE UserAssessmentResponses (
+    response_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_assessment_id INT NOT NULL,
+    question_id INT NOT NULL,
+    response_value INT CHECK (response_value >= 0 AND response_value <= 3),
+    response_text VARCHAR(100),
+    FOREIGN KEY (user_assessment_id) REFERENCES UserAssessments(user_assessment_id)
+        ON DELETE CASCADE,
+    FOREIGN KEY (question_id) REFERENCES AssessmentQuestions(question_id)
+);
+
+-- 7. DIAGNOSES TABLE
+CREATE TABLE Diagnoses (
+    diagnosis_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(200) NOT NULL,
+    code VARCHAR(20),
+    category VARCHAR(100),
+    description TEXT,
+    symptoms TEXT,
+    treatment_options TEXT
+);
+
+-- 8. ASSESSMENT_DIAGNOSES TABLE (Junction)
+CREATE TABLE AssessmentDiagnoses (
+    assessment_id INT NOT NULL,
+    diagnosis_id INT NOT NULL,
+    PRIMARY KEY (assessment_id, diagnosis_id),
+    FOREIGN KEY (assessment_id) REFERENCES Assessments(assessment_id),
+    FOREIGN KEY (diagnosis_id) REFERENCES Diagnoses(diagnosis_id)
+);
+
+-- 9. USER_DIAGNOSES TABLE
+CREATE TABLE UserDiagnoses (
+    user_diagnosis_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    diagnosis_id INT NOT NULL,
+    user_assessment_id INT,
+    severity ENUM('mild', 'moderate', 'severe'),
+    diagnosed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    notes TEXT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (diagnosis_id) REFERENCES Diagnoses(diagnosis_id),
+    FOREIGN KEY (user_assessment_id) REFERENCES UserAssessments(user_assessment_id)
+);
+
+-- 10. THERAPISTS TABLE
+CREATE TABLE Therapists (
+    therapist_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL UNIQUE,
+    license_number VARCHAR(100) UNIQUE NOT NULL,
+    specialization VARCHAR(255),
+    years_experience INT,
+    hourly_rate DECIMAL(10, 2),
+    bio TEXT,
+    is_verified BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 11. APPOINTMENTS TABLE
+CREATE TABLE Appointments (
+    appointment_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    therapist_id INT NOT NULL,
+    scheduled_at DATETIME NOT NULL,
+    duration_minutes INT DEFAULT 60,
+    status ENUM('scheduled', 'completed', 'cancelled', 'no_show') DEFAULT 'scheduled',
+    notes TEXT,
+    meeting_link VARCHAR(500),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (therapist_id) REFERENCES Therapists(therapist_id)
+);
+
+-- 12. MOOD_ENTRIES TABLE
+CREATE TABLE MoodEntries (
+    entry_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    mood_level INT CHECK (mood_level >= 1 AND mood_level <= 10),
+    mood_type ENUM('happy', 'sad', 'anxious', 'calm', 'angry', 'neutral',
+                   'excited', 'stressed', 'hopeful', 'tired'),
+    notes TEXT,
+    entry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 13. JOURNAL_ENTRIES TABLE
+CREATE TABLE JournalEntries (
+    journal_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    title VARCHAR(255),
+    content TEXT NOT NULL,
+    is_private BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 14. GOALS TABLE
+CREATE TABLE Goals (
+    goal_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    target_date DATE,
+    status ENUM('active', 'completed', 'abandoned') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 15. EMERGENCY_CONTACTS TABLE
+CREATE TABLE EmergencyContacts (
+    contact_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    name VARCHAR(200) NOT NULL,
+    relationship VARCHAR(100),
+    phone VARCHAR(20) NOT NULL,
+    is_primary BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
+);
+
+-- 16. RESOURCES TABLE
+CREATE TABLE Resources (
+    resource_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    resource_type ENUM('article', 'video', 'audio', 'exercise', 'meditation'),
+    content_url VARCHAR(500),
+    category VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 17. USER_RESOURCES TABLE (Junction)
+CREATE TABLE UserResources (
+    user_id INT NOT NULL,
+    resource_id INT NOT NULL,
+    is_bookmarked BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP,
+    PRIMARY KEY (user_id, resource_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (resource_id) REFERENCES Resources(resource_id) ON DELETE CASCADE
+);
+
+
+================================================================================
+                         SAMPLE DATA - GAD-7 & PHQ-9
+================================================================================
+
+-- Insert GAD-7 Assessment
+INSERT INTO Assessments (name, full_name, description, category, total_questions, max_score)
+VALUES ('GAD-7', 'Generalized Anxiety Disorder 7-item scale', 
+        'A brief measure for assessing generalized anxiety disorder', 
+        'anxiety', 7, 21);
+
+-- Insert PHQ-9 Assessment  
+INSERT INTO Assessments (name, full_name, description, category, total_questions, max_score)
+VALUES ('PHQ-9', 'Patient Health Questionnaire-9', 
+        'A multipurpose instrument for screening, diagnosing, and measuring depression severity', 
+        'depression', 9, 27);
+
+-- Insert GAD-7 Severity Levels
+INSERT INTO SeverityLevels (assessment_id, min_score, max_score, severity_label, 
+                            recommendation, requires_professional) VALUES
+(1, 0, 4, 'Minimal Anxiety', 'Continue self-care practices and stress management', FALSE),
+(1, 5, 9, 'Mild Anxiety', 'Monitor symptoms, consider counseling or support groups', FALSE),
+(1, 10, 14, 'Moderate Anxiety', 'Professional consultation recommended', TRUE),
+(1, 15, 21, 'Severe Anxiety', 'Immediate professional intervention needed', TRUE);
+
+-- Insert PHQ-9 Severity Levels
+INSERT INTO SeverityLevels (assessment_id, min_score, max_score, severity_label,
+                            recommendation, requires_professional) VALUES
+(2, 0, 4, 'Minimal Depression', 'Self-care and healthy lifestyle recommended', FALSE),
+(2, 5, 9, 'Mild Depression', 'Watchful waiting, consider supportive counseling', FALSE),
+(2, 10, 14, 'Moderate Depression', 'Treatment plan with therapy recommended', TRUE),
+(2, 15, 19, 'Moderately Severe', 'Active treatment with antidepressants and/or therapy', TRUE),
+(2, 20, 27, 'Severe Depression', 'Immediate intervention and medication evaluation', TRUE);
+
+-- Insert Diagnoses
+INSERT INTO Diagnoses (name, code, category, description) VALUES
+('Generalized Anxiety Disorder', 'F41.1', 'Anxiety', 
+ 'Excessive worry about everyday matters that is difficult to control'),
+('Major Depressive Disorder', 'F32.1', 'Depression', 
+ 'Persistent feelings of sadness and loss of interest affecting daily life'),
+('Post-Traumatic Stress Disorder', 'F43.10', 'Trauma', 
+ 'Condition triggered by experiencing or witnessing a terrifying event'),
+('Panic Disorder', 'F41.0', 'Anxiety', 
+ 'Recurrent unexpected panic attacks with intense fear');
+
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
+
+Document Created: 2 February 2026
+Version: 1.0
+Platform: Clarity - Mental Health & Wellness Application
+
+For questions or updates, refer to the development team.
+================================================================================
