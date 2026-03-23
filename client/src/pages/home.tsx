@@ -233,21 +233,29 @@ export default function HomePage() {
 
             {/* Main Heading */}
             <div className="space-y-3 sm:space-y-4 md:space-y-6">
-              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter text-blue-600 dark:text-blue-400 leading-tight px-2">
+              <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-blue-600 dark:text-blue-400 leading-tight px-2 tracking-[-0.02em] [font-family:Poppins,Inter,sans-serif] drop-shadow-[0_8px_24px_rgba(30,64,175,0.22)]">
                 Welcome to Clarity
               </h1>
               <div className="space-y-2">
                 <BlurText 
-                  text="Mental wellbeing begins with clarity,"
-                  className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-800 dark:text-gray-200 max-w-5xl mx-auto px-4 leading-snug text-center justify-center tracking-wide"
+                  text="Mental Well-Being Begins With"
+                  className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-slate-800 dark:text-slate-100 max-w-5xl mx-auto px-4 leading-snug text-center justify-center tracking-wide"
                   delay={150}
                   animateBy="words"
                   direction="bottom"
                   stepDuration={0.5}
                 />
                 <BlurText 
-                  text="when the mind is clear, the heart is at peace"
-                  className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-800 dark:text-gray-200 max-w-5xl mx-auto px-4 leading-snug text-center justify-center tracking-wide"
+                  text="CLARITY"
+                  className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-black dark:text-black max-w-5xl mx-auto px-4 leading-snug text-center justify-center tracking-[0.08em]"
+                  delay={150}
+                  animateBy="words"
+                  direction="bottom"
+                  stepDuration={0.5}
+                />
+                <BlurText 
+                  text="When the Mind Is Clear, the Heart Is at Peace."
+                  className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-slate-800 dark:text-slate-100 max-w-5xl mx-auto px-4 leading-snug text-center justify-center tracking-wide"
                   delay={150}
                   animateBy="words"
                   direction="bottom"

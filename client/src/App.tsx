@@ -80,12 +80,25 @@ function RouterComponent() {
 
 function App() {
   const [location, setLocation] = useLocation();
+  const appBase =
+    typeof window !== "undefined" && window.location.hostname.includes("github.io")
+      ? "/Clarity"
+      : "";
+  const normalizedLocation = location.startsWith("/Clarity")
+    ? location.replace("/Clarity", "") || "/"
+    : location;
   
   // Show SOS button only on dashboard page
-  const showSOSButton = location === "/dashboard";
+  const showSOSButton = normalizedLocation === "/dashboard";
   
   // Routes that should not show the normal app layout
-  const isSpecialRoute = location === "/" || location === "" || location === "/login" || location === "/register" || location === "/admin-login" || location === "/admin";
+  const isSpecialRoute =
+    normalizedLocation === "/" ||
+    normalizedLocation === "" ||
+    normalizedLocation === "/login" ||
+    normalizedLocation === "/register" ||
+    normalizedLocation === "/admin-login" ||
+    normalizedLocation === "/admin";
   
   // Navigation handler
   const handleNavigation = (path: string) => {
@@ -104,7 +117,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <TooltipProvider>
-            <Router base="/Clarity">
+            <Router base={appBase}>
               <div className="min-h-screen">
                 <RouterComponent />
               </div>
@@ -120,7 +133,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-        <Router base="/Clarity">
+        <Router base={appBase}>
         <div className="responsive-container">
           <SidebarProvider style={style as React.CSSProperties}>
           {/* Fixed Header */}

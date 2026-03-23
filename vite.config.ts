@@ -31,5 +31,5 @@ export default defineConfig({
     },
   },
   // Add base path for GitHub Pages
-  base: "/Clarity/",
+  base: process.env.NODE_ENV === "production" ? "/Clarity/" : "/",
 });
