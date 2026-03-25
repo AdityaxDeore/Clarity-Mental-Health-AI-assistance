@@ -47,7 +47,7 @@ For a **complete and detailed technical documentation** of our entire stack, see
 
 **Backend:**
 - Node.js + Express + TypeScript
-- Drizzle ORM + PostgreSQL/SQLite
+- MySQL (mysql2) + Express data APIs
 - WebSocket + Express Sessions + Passport.js
 
 **Build & Dev:**

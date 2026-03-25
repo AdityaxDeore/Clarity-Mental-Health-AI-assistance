@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-// Simple test script for MERN stack APIs
+// Simple test script for backend APIs
 const https = require('http');
 
 const baseUrl = 'http://localhost:5000';
 
 async function testAPI() {
-    console.log('🧪 Testing MERN Stack APIs...\n');
+    console.log('Testing backend APIs...\n');
     
     // Test 1: Register a user
     console.log('1️⃣ Testing user registration...');
@@ -28,7 +28,7 @@ async function testAPI() {
             console.log('\n2️⃣ Testing mood entry with authentication...');
             const moodResponse = await makeRequest('/api/mood', 'POST', {
                 moodValue: 4,
-                notes: 'Feeling good after setting up MERN stack!'
+                notes: 'Feeling good after setting up the backend stack!'
             }, registerResponse.data.token);
             
             if (moodResponse.success) {
@@ -40,8 +40,8 @@ async function testAPI() {
             // Test 3: Create a goal
             console.log('\n3️⃣ Testing goal creation...');
             const goalResponse = await makeRequest('/api/goals', 'POST', {
-                title: 'Learn MERN Stack',
-                description: 'Master MongoDB, Express, React, and Node.js',
+                title: 'Learn Full Stack Development',
+                description: 'Master MySQL, Express, React, and Node.js',
                 category: 'academic'
             }, registerResponse.data.token);
             
@@ -59,8 +59,8 @@ async function testAPI() {
         console.log('❌ Test failed:', error.message);
     }
     
-    console.log('\n🎉 MERN stack API testing complete!');
-    console.log('💡 Note: Tests may fail if MongoDB is not connected, but the server should handle this gracefully.');
+    console.log('\nBackend API testing complete!');
+    console.log('Note: Tests may fail if MySQL is not connected, but the server should report the issue gracefully.');
 }
 
 function makeRequest(path, method = 'GET', data = null, token = null) {
