@@ -4,6 +4,10 @@ import { initializeCollections, verifyDatabaseIntegrity } from "./db-initialize"
 let client: MongoClient | null = null;
 let db: Db | null = null;
 
+type ConnectDBOptions = {
+  skipInitialization?: boolean;
+};
+
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -15,7 +19,7 @@ function requiredEnv(name: string): string {
 /**
  * Connect to MongoDB Atlas with full initialization
  */
-export async function connectDB(): Promise<Db> {
+export async function connectDB(options: ConnectDBOptions = {}): Promise<Db> {
   if (db) {
     return db;
   }
@@ -48,11 +52,13 @@ export async function connectDB(): Promise<Db> {
     await client.db("admin").command({ ping: 1 });
     console.log("[MongoDB] Connection ping successful");
 
-    // Initialize collections and indexes
-    await initializeCollections(db);
+    if (!options.skipInitialization) {
+      // Initialize collections and indexes
+      await initializeCollections(db);
 
-    // Verify database integrity
-    await verifyDatabaseIntegrity(db);
+      // Verify database integrity
+      await verifyDatabaseIntegrity(db);
+    }
 
     return db;
   } catch (error) {

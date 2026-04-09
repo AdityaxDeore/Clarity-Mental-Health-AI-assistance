@@ -1,22 +1,21 @@
 #!/usr/bin/env node
 
 /**
- * MongoDB Database Initialization & Migration Script
- * Run this script to set up or reset your MongoDB Atlas database
- * 
+ * MongoDB initialization/reset script for the final ER model.
+ *
  * Usage:
- *   npx ts-node scripts/mongo-init.ts          # Initialize collections
- *   npx ts-node scripts/mongo-init.ts --seed   # Initialize + add sample data
- *   npx ts-node scripts/mongo-init.ts --drop   # Drop all collections (DANGEROUS!)
+ *   npx tsx scripts/mongo-init.ts
+ *   npx tsx scripts/mongo-init.ts --seed
+ *   npx tsx scripts/mongo-init.ts --drop
  */
 
 import "dotenv/config";
 import { connectDB, closeDB, getDB } from "../server/db-mongo-updated";
-import { 
-  initializeCollections, 
-  dropAllCollections, 
+import {
+  initializeCollections,
+  dropAllCollections,
   verifyDatabaseIntegrity,
-  COLLECTIONS 
+  COLLECTIONS,
 } from "../server/db-initialize";
 import { insertMany } from "../server/db-utilities";
 
@@ -25,153 +24,238 @@ const shouldSeed = args.includes("--seed");
 const shouldDrop = args.includes("--drop");
 
 async function seedSampleData() {
-  console.log("\n[Init] Seeding sample data...");
+  console.log("\n[Init] Seeding ER-model sample data...");
 
-  // Create sample users
-  const sampleUsers = [
+  const now = new Date();
+
+  // USERS
+  const userIds = await insertMany(COLLECTIONS.USERS, [
     {
-      username: "mentor_user",
-      email: "mentor@example.com",
-      password: "hashedpassword123", // In production, use bcrypt
-      role: "mentor",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      username: "mentee_user",
-      email: "mentee@example.com",
+      username: "user_rahul",
+      email: "rahul@example.com",
       password: "hashedpassword123",
+      firstName: "Rahul",
+      lastName: "Sharma",
       role: "user",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
     },
     {
-      username: "admin_user",
-      email: "admin@example.com",
+      username: "therapist_aarti",
+      email: "aarti@example.com",
       password: "hashedpassword123",
-      role: "admin",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      firstName: "Aarti",
+      lastName: "Kulkarni",
+      role: "mentor",
+      createdAt: now,
+      updatedAt: now,
     },
-  ];
+  ]);
 
-  const userIds = await insertMany(COLLECTIONS.USERS, sampleUsers);
-  console.log("[Init] ✓ Created 3 sample users");
+  // SUPERVISOR
+  const supervisorIds = await insertMany(COLLECTIONS.SUPERVISORS, [
+    {
+      name: "Dr. Priya Menon",
+      contact: "+91-9000000001",
+      userId: userIds[1],
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
 
-  // Create sample mood entries
-  const sampleMoodEntries = [
+  // THERAPISTS
+  const therapistIds = await insertMany(COLLECTIONS.THERAPISTS, [
+    {
+      userId: userIds[1],
+      supervisorId: supervisorIds[0],
+      specialization: "Anxiety & Stress",
+      licenseNumber: "LIC-MH-001",
+      experienceYears: 7,
+      consultationFee: 1200,
+      availabilityStatus: "available",
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // APPOINTMENTS
+  const appointmentIds = await insertMany(COLLECTIONS.APPOINTMENTS, [
     {
       userId: userIds[0],
-      moodValue: 4,
-      date: new Date(),
-      notes: "Feeling positive today!",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      therapistId: therapistIds[0],
+      schedule: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+      durationMinutes: 60,
+      status: "scheduled",
+      createdAt: now,
+      updatedAt: now,
     },
-    {
-      userId: userIds[1],
-      moodValue: 3,
-      date: new Date(),
-      notes: "Regular day",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
+  ]);
 
-  await insertMany(COLLECTIONS.MOOD_ENTRIES, sampleMoodEntries);
-  console.log("[Init] ✓ Created sample mood entries");
-
-  // Create sample goals
-  const sampleGoals = [
+  // PAYMENT_GATEWAY
+  const gatewayIds = await insertMany(COLLECTIONS.PAYMENT_GATEWAYS, [
     {
-      userId: userIds[1],
-      title: "Complete Python certification",
-      description: "Finish the online Python course and get certified",
-      category: "academic",
-      progress: 45,
-      isCompleted: false,
-      targetDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      userId: userIds[1],
-      title: "Daily meditation",
-      description: "Meditate for 10 minutes every day",
-      category: "wellness",
-      progress: 20,
-      isCompleted: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ];
-
-  await insertMany(COLLECTIONS.GOALS, sampleGoals);
-  console.log("[Init] ✓ Created sample goals");
-
-  // Create sample mentor
-  const mentorData = [
-    {
-      userId: userIds[0],
-      name: "John Mentor",
-      year: 3,
-      region: "East Campus",
-      domains: ["Web Development", "JavaScript", "React"],
-      bio: "Passionate mentor helping freshers with tech skills",
-      maxMentees: 5,
-      currentMentees: 1,
+      name: "Razorpay",
+      providerCode: "RAZORPAY",
+      transactionFee: 2.0,
       isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
     },
-  ];
+  ]);
 
-  const mentorIds = await insertMany(COLLECTIONS.MENTORS, mentorData);
-  console.log("[Init] ✓ Created sample mentor");
-
-  // Create sample mentee
-  const menteeData = [
+  // PAYMENT
+  await insertMany(COLLECTIONS.PAYMENTS, [
     {
-      userId: userIds[1],
-      name: "Jane Mentee",
-      year: 1,
-      region: "East Campus",
-      interests: ["Web Development", "JavaScript"],
-      goals: "Learn full-stack development",
-      hasActiveMentor: false,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      appointmentId: appointmentIds[0],
+      paymentGatewayId: gatewayIds[0],
+      amount: 1200,
+      date: now,
+      method: "upi",
+      currency: "INR",
+      status: "paid",
+      createdAt: now,
+      updatedAt: now,
     },
-  ];
+  ]);
 
-  const menteeIds = await insertMany(COLLECTIONS.MENTEES, menteeData);
-  console.log("[Init] ✓ Created sample mentee");
-
-  // Create sample mentorship
-  const mentorshipData = [
+  // MOOD_ENTRIES
+  await insertMany(COLLECTIONS.MOOD_ENTRIES, [
     {
-      mentorId: mentorIds[0],
-      menteeId: menteeIds[0],
-      status: "active",
-      startDate: new Date(),
-      matchScore: 85,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      userId: userIds[0],
+      moodId: 4,
+      moodValue: 4,
+      notes: "Feeling more stable today.",
+      date: now,
+      createdAt: now,
+      updatedAt: now,
     },
-  ];
+  ]);
 
-  await insertMany(COLLECTIONS.MENTORSHIPS, mentorshipData);
-  console.log("[Init] ✓ Created sample mentorship");
+  // JOURNAL_ENTRIES
+  await insertMany(COLLECTIONS.JOURNAL_ENTRIES, [
+    {
+      userId: userIds[0],
+      title: "Daily reflection",
+      content: "Today I practiced breathing and felt better.",
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
 
-  console.log("[Init] ✅ Sample data seeding complete!");
+  // GOALS
+  await insertMany(COLLECTIONS.GOALS, [
+    {
+      userId: userIds[0],
+      title: "Sleep by 11 PM",
+      status: "in_progress",
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // EMERGENCY_CONTACTS
+  await insertMany(COLLECTIONS.EMERGENCY_CONTACTS, [
+    {
+      userId: userIds[0],
+      name: "Aman Sharma",
+      relationship: "Brother",
+      phone: "+91-9000000002",
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // RESOURCES
+  await insertMany(COLLECTIONS.RESOURCES, [
+    {
+      title: "5 minute grounding exercise",
+      description: "Simple daily grounding practice.",
+      type: "article",
+      category: "self-help",
+      url: "https://example.com/grounding",
+      tags: ["anxiety", "breathing"],
+      isOfficial: true,
+      views: 0,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // ASSESSMENTS
+  const assessmentIds = await insertMany(COLLECTIONS.ASSESSMENTS, [
+    {
+      name: "PHQ-9",
+      title: "Patient Health Questionnaire",
+      category: "depression",
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // ASSESSMENT_QUESTIONS
+  await insertMany(COLLECTIONS.ASSESSMENT_QUESTIONS, [
+    {
+      assessmentId: assessmentIds[0],
+      supervisorId: supervisorIds[0],
+      questionText: "Little interest or pleasure in doing things?",
+      questionType: "scale",
+      order: 1,
+      weight: 1,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // USER_ASSESSMENTS
+  const userAssessmentIds = await insertMany(COLLECTIONS.USER_ASSESSMENTS, [
+    {
+      userId: userIds[0],
+      assessmentId: assessmentIds[0],
+      responses: [],
+      totalScore: 6,
+      submittedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // DIAGNOSIS
+  const diagnosisIds = await insertMany(COLLECTIONS.DIAGNOSES, [
+    {
+      code: "DX-ANX-001",
+      icdCode: "F41.1",
+      name: "Generalized Anxiety Disorder",
+      severity: "moderate",
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  // USER_DIAGNOSES
+  await insertMany(COLLECTIONS.USER_DIAGNOSES, [
+    {
+      userId: userIds[0],
+      diagnosisId: diagnosisIds[0],
+      sourceUserAssessmentId: userAssessmentIds[0],
+      diagnosedByTherapistId: therapistIds[0],
+      diagnosedAt: now,
+      severity: "moderate",
+      createdAt: now,
+      updatedAt: now,
+    },
+  ]);
+
+  console.log("[Init] ✅ ER-model sample data seeded");
 }
 
 async function main() {
   try {
-    console.log("🚀 MongoDB Database Initialization");
-    console.log("====================================\n");
+    console.log("🚀 MongoDB ER-Model Initialization");
+    console.log("===================================\n");
 
-    await connectDB();
+    await connectDB({ skipInitialization: shouldDrop });
 
     if (shouldDrop) {
       console.log("⚠️  WARNING: Dropping all collections...");
@@ -192,23 +276,19 @@ async function main() {
       }
     }
 
-    // Initialize collections
     await initializeCollections(getDB());
 
-    // Verify initialization
     const isIntegral = await verifyDatabaseIntegrity(getDB());
-
     if (!isIntegral) {
       throw new Error("Database integrity check failed");
     }
 
-    // Seed sample data if requested
     if (shouldSeed) {
       await seedSampleData();
     }
 
     console.log("\n✅ Database initialization complete!");
-    console.log("[Init] Database is ready to use");
+    console.log("[Init] Final ER-model database is ready");
   } catch (error) {
     console.error("\n❌ Database initialization failed!");
     console.error(error);
