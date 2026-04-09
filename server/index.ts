@@ -4,7 +4,7 @@ import type { Server } from "http";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import { connectMySQL, getMySQLPool } from "./mysql";
+import { connectDB, getDB, closeDB, healthCheck } from "./db-mongo-updated";
 
 const app = express();
 
@@ -30,13 +30,11 @@ async function registerRoutes(appInstance: express.Express): Promise<Server> {
   });
 
   appInstance.get("/api/db-health", async (_req, res) => {
-    try {
-      const pool = getMySQLPool();
-      await pool.query("SELECT 1");
-      res.json({ ok: true, database: "mysql" });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Database check failed";
-      res.status(503).json({ ok: false, database: "mysql", error: message });
+    const result = await healthCheck();
+    if (result.ok) {
+      res.json(result.details);
+    } else {
+      res.status(503).json(result.details);
     }
   });
 
@@ -77,7 +75,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  await connectMySQL();
+  await connectDB();
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
