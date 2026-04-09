@@ -26,224 +26,196 @@ const shouldDrop = args.includes("--drop");
 async function seedSampleData() {
   console.log("\n[Init] Seeding ER-model sample data...");
 
-  const now = new Date();
+  const scheduleDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+
+  const userId = "USR-001";
+  const therapistUserId = "USR-002";
+  const therapistId = "THR-001";
+  const supervisorId = "SUP-001";
+  const apptId = "APT-001";
+  const gatewayId = "GTW-001";
+  const paymentId = "PAY-001";
+  const resourceId = "RES-001";
+  const entryId = "ENT-001";
+  const journalId = "JRN-001";
+  const goalId = "GOL-001";
+  const contactId = "EMC-001";
+  const diagnosisId = "DGN-001";
+  const userDiagId = "UDG-001";
+  const assessmentId = "ASM-001";
+  const questionId = "QST-001";
+  const userAssessId = "UAS-001";
 
   // USERS
-  const userIds = await insertMany(COLLECTIONS.USERS, [
+  await insertMany(COLLECTIONS.USERS, [
     {
-      username: "user_rahul",
+      userId,
       email: "rahul@example.com",
-      password: "hashedpassword123",
+      password: "hashed_password_user",
       firstName: "Rahul",
       lastName: "Sharma",
-      role: "user",
-      createdAt: now,
-      updatedAt: now,
     },
     {
-      username: "therapist_aarti",
+      userId: therapistUserId,
       email: "aarti@example.com",
-      password: "hashedpassword123",
+      password: "hashed_password_therapist",
       firstName: "Aarti",
       lastName: "Kulkarni",
-      role: "mentor",
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
   // SUPERVISOR
-  const supervisorIds = await insertMany(COLLECTIONS.SUPERVISORS, [
+  await insertMany(COLLECTIONS.SUPERVISORS, [
     {
+      supervisorId,
       name: "Dr. Priya Menon",
       contact: "+91-9000000001",
-      userId: userIds[1],
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
   // THERAPISTS
-  const therapistIds = await insertMany(COLLECTIONS.THERAPISTS, [
+  await insertMany(COLLECTIONS.THERAPISTS, [
     {
-      userId: userIds[1],
-      supervisorId: supervisorIds[0],
-      specialization: "Anxiety & Stress",
-      licenseNumber: "LIC-MH-001",
-      experienceYears: 7,
-      consultationFee: 1200,
-      availabilityStatus: "available",
-      createdAt: now,
-      updatedAt: now,
+      therapistId,
+      userId: therapistUserId,
+      supervisorId,
+      licenseNo: "LIC-MH-001",
+      specialization: "Anxiety",
     },
   ]);
 
   // APPOINTMENTS
-  const appointmentIds = await insertMany(COLLECTIONS.APPOINTMENTS, [
+  await insertMany(COLLECTIONS.APPOINTMENTS, [
     {
-      userId: userIds[0],
-      therapistId: therapistIds[0],
-      schedule: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-      durationMinutes: 60,
-      status: "scheduled",
-      createdAt: now,
-      updatedAt: now,
+      apptId,
+      userId,
+      therapistId,
+      schedule: scheduleDate,
     },
   ]);
 
   // PAYMENT_GATEWAY
-  const gatewayIds = await insertMany(COLLECTIONS.PAYMENT_GATEWAYS, [
+  await insertMany(COLLECTIONS.PAYMENT_GATEWAYS, [
     {
+      gatewayId,
       name: "Razorpay",
-      providerCode: "RAZORPAY",
       transactionFee: 2.0,
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
   // PAYMENT
   await insertMany(COLLECTIONS.PAYMENTS, [
     {
-      appointmentId: appointmentIds[0],
-      paymentGatewayId: gatewayIds[0],
+      paymentId,
+      apptId,
+      therapistId,
+      gatewayId,
       amount: 1200,
-      date: now,
+      date: new Date(),
       method: "upi",
-      currency: "INR",
-      status: "paid",
-      createdAt: now,
-      updatedAt: now,
-    },
-  ]);
-
-  // MOOD_ENTRIES
-  await insertMany(COLLECTIONS.MOOD_ENTRIES, [
-    {
-      userId: userIds[0],
-      moodId: 4,
-      moodValue: 4,
-      notes: "Feeling more stable today.",
-      date: now,
-      createdAt: now,
-      updatedAt: now,
-    },
-  ]);
-
-  // JOURNAL_ENTRIES
-  await insertMany(COLLECTIONS.JOURNAL_ENTRIES, [
-    {
-      userId: userIds[0],
-      title: "Daily reflection",
-      content: "Today I practiced breathing and felt better.",
-      createdAt: now,
-      updatedAt: now,
-    },
-  ]);
-
-  // GOALS
-  await insertMany(COLLECTIONS.GOALS, [
-    {
-      userId: userIds[0],
-      title: "Sleep by 11 PM",
-      status: "in_progress",
-      createdAt: now,
-      updatedAt: now,
-    },
-  ]);
-
-  // EMERGENCY_CONTACTS
-  await insertMany(COLLECTIONS.EMERGENCY_CONTACTS, [
-    {
-      userId: userIds[0],
-      name: "Aman Sharma",
-      relationship: "Brother",
-      phone: "+91-9000000002",
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
   // RESOURCES
   await insertMany(COLLECTIONS.RESOURCES, [
     {
+      resourceId,
+      therapistId,
       title: "5 minute grounding exercise",
-      description: "Simple daily grounding practice.",
+      description: "Simple daily grounding practice",
       type: "article",
-      category: "self-help",
-      url: "https://example.com/grounding",
-      tags: ["anxiety", "breathing"],
-      isOfficial: true,
-      views: 0,
-      createdAt: now,
-      updatedAt: now,
+    },
+  ]);
+
+  // MOOD_ENTRIES
+  await insertMany(COLLECTIONS.MOOD_ENTRIES, [
+    {
+      entryId,
+      userId,
+      moodLv: 4,
+      notes: "Feeling better today",
+      date: new Date(),
+    },
+  ]);
+
+  // JOURNAL_ENTRIES
+  await insertMany(COLLECTIONS.JOURNAL_ENTRIES, [
+    {
+      journalId,
+      userId,
+      title: "Daily reflection",
+      content: "Practiced breathing and mindfulness.",
+    },
+  ]);
+
+  // GOALS
+  await insertMany(COLLECTIONS.GOALS, [
+    {
+      goalId,
+      userId,
+      title: "Sleep by 11 PM",
+      status: "in_progress",
+    },
+  ]);
+
+  // EMERGENCY_CONTACTS
+  await insertMany(COLLECTIONS.EMERGENCY_CONTACTS, [
+    {
+      contactId,
+      userId,
+      name: "Aman Sharma",
+      phone: "+91-9000000002",
+    },
+  ]);
+
+  // DIAGNOSIS
+  await insertMany(COLLECTIONS.DIAGNOSES, [
+    {
+      diagnosisId,
+      name: "Generalized Anxiety Disorder",
+      icdCode: "F41.1",
     },
   ]);
 
   // ASSESSMENTS
-  const assessmentIds = await insertMany(COLLECTIONS.ASSESSMENTS, [
+  await insertMany(COLLECTIONS.ASSESSMENTS, [
     {
+      assessmentId,
       name: "PHQ-9",
-      title: "Patient Health Questionnaire",
       category: "depression",
-      isActive: true,
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
   // ASSESSMENT_QUESTIONS
   await insertMany(COLLECTIONS.ASSESSMENT_QUESTIONS, [
     {
-      assessmentId: assessmentIds[0],
-      supervisorId: supervisorIds[0],
+      questionId,
+      assessmentId,
       questionText: "Little interest or pleasure in doing things?",
-      questionType: "scale",
-      order: 1,
-      weight: 1,
-      createdAt: now,
-      updatedAt: now,
+      supervisorId,
     },
   ]);
 
   // USER_ASSESSMENTS
-  const userAssessmentIds = await insertMany(COLLECTIONS.USER_ASSESSMENTS, [
+  await insertMany(COLLECTIONS.USER_ASSESSMENTS, [
     {
-      userId: userIds[0],
-      assessmentId: assessmentIds[0],
-      responses: [],
+      userAssessId,
+      userId,
+      assessId: assessmentId,
+      assignedTherapistId: therapistId,
+      assignedSupervisorId: supervisorId,
       totalScore: 6,
-      submittedAt: now,
-      createdAt: now,
-      updatedAt: now,
-    },
-  ]);
-
-  // DIAGNOSIS
-  const diagnosisIds = await insertMany(COLLECTIONS.DIAGNOSES, [
-    {
-      code: "DX-ANX-001",
-      icdCode: "F41.1",
-      name: "Generalized Anxiety Disorder",
-      severity: "moderate",
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
   // USER_DIAGNOSES
   await insertMany(COLLECTIONS.USER_DIAGNOSES, [
     {
-      userId: userIds[0],
-      diagnosisId: diagnosisIds[0],
-      sourceUserAssessmentId: userAssessmentIds[0],
-      diagnosedByTherapistId: therapistIds[0],
-      diagnosedAt: now,
+      userDiagId,
+      userId,
+      diagnosisId,
+      assessId: assessmentId,
       severity: "moderate",
-      createdAt: now,
-      updatedAt: now,
     },
   ]);
 
