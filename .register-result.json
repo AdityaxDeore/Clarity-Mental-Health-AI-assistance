@@ -1,0 +1,15 @@
+{
+    "username":  "user_1775743003862",
+    "email":  "user_1775743003862@example.com",
+    "status":  201,
+    "body":  {
+                 "token":  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJVU1ItMTc3NTc0MzAwNDE2MyIsImVtYWlsIjoidXNlcl8xNzc1NzQzMDAzODYyQGV4YW1wbGUuY29tIiwidXNlcm5hbWUiOiJ1c2VyXzE3NzU3NDMwMDM4NjIiLCJpYXQiOjE3NzU3NDMwMDQsImV4cCI6MTc3NjM0NzgwNH0.xUv1bnIZwkuvPiehiMOHSni2vxsRXUjx1RmE4oeaGcE",
+                 "user":  {
+                              "id":  "USR-1775743004163",
+                              "username":  "user_1775743003862",
+                              "email":  "user_1775743003862@example.com",
+                              "firstName":  "Test",
+                              "lastName":  "User"
+                          }
+             }
+}

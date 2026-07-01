@@ -1,0 +1,197 @@
+================================================================================
+                    MINI PROJECT REPORT FORMAT & DETAILED GUIDE
+                    (CUSTOMIZED FOR "CLARITY" - DBMS LAB REPORT)
+================================================================================
+
+This document is tailored specifically for the Clarity platform's Database 
+Management System (DBMS) Lab Mini-Project Report. It accurately reflects your 
+Drizzle ORM + PostgreSQL schema, highlighting the entity relations and data flow.
+
+--------------------------------------------------------------------------------
+1. FRONT PAGE (TITLE PAGE FORMAT)
+--------------------------------------------------------------------------------
+[INSTITUTION LOGO HERE]
+
+MINI PROJECT REPORT ON:
+CLARITY - A Mental Health & Student Support Platform
+
+Submitted in partial fulfillment of the requirements for the degree of
+[Bachelor of Engineering / Technology] in [Computer Science / IT]
+
+Submitted By:
+1. [Name 1] (Roll No: [Roll Number])
+2. [Name 2] (Roll No: [Roll Number])
+3. [Name 3] (Roll No: [Roll Number])
+
+Under the Guidance of:
+[Guide Name & Designation]
+
+Academic Year: 2023 - 2024
+Department of [Your Department Name]
+[Name of College / University]
+
+--------------------------------------------------------------------------------
+2. ABSTRACT
+--------------------------------------------------------------------------------
+In the fast-paced modern educational environment, student mental health and well-being have become critical concerns. Clarity is a comprehensive mental health and student support platform designed to provide an accessible, integrated digital ecosystem for wellness and peer mentoring. The platform facilitates daily mood tracking, goal management, anonymous peer support, and a structured mentor-mentee matching system.
+
+Developed using modern web technologies (React, Node.js) and backed by a robust PostgreSQL relational database managed via Drizzle ORM, clarity ensures secure, real-time data persistence. The system addresses the gap between students needing guidance (mentees) and experienced peers (mentors) by tracking progress through assigned tasks and milestones. Through normalized database tables handling complex relationships like continuous mood aggregation, many-to-many mentorship tracking, and targeted user reactions, Clarity proves to be an effective technical model for managing sensitive, inter-connected user psychological and academic data.
+
+--------------------------------------------------------------------------------
+3. INTRODUCTION (SCOPE, PURPOSE)
+--------------------------------------------------------------------------------
+A. Overview:
+Clarity addresses the growing need for mental wellness tracking and structured peer mentorship. By combining quantitative wellness metrics (Mood Entries) with qualitative human support (Mentoring, Tasks), it bridges the gap between isolation and community inclusion.
+
+B. Purpose:
+The core purpose of this project, from a DBMS perspective, is to design and implement a transactional relational database that efficiently handles high-frequency daily wellness logs, secure user authentication, complex many-to-many user mappings (mentors to mentees), and engagement gamification (reaction streaks), ensuring data integrity and fast retrieval.
+
+C. Scope:
+- Core Modules: User Identity Management, Mood & Wellness Tracking, Goal Tracking, Mentor-Mentee relationship mapping, and reaction-based engagement.
+- Technical Scope: Implementing a fully normalized PostgreSQL database utilizing unique constraints (e.g., one mood entry per user per day), foreign keys, check constraints, schema validation via Drizzle/Zod, and maintaining ACID properties.
+- Limitations: The system does not currently handle real-time multimedia chat or direct video-calling within the database to avoid blob-storage bloat.
+
+--------------------------------------------------------------------------------
+4. FUNCTIONAL REQUIREMENTS
+--------------------------------------------------------------------------------
+Module 1: User Management (Authentication)
+- FR1.1: System must register users with a unique UUID, username, and hashed password.
+- FR1.2: System must prevent duplicate usernames via UNIQUE database constraints.
+
+Module 2: Mood & Wellness Tracking
+- FR2.1: Users must log their mood on a scale of 1-5.
+- FR2.2: The database must enforce a unique composite constraint on (userId, date) to prevent multiple logs on the same day.
+
+Module 3: Mentorship & Task Management
+- FR3.1: Users can register as Mentors (Years 2-4) specifying domains of expertise, region, and max mentee capacity.
+- FR3.2: Users can register as Mentees (Year 1) specifying interests and regions.
+- FR3.3: System must track Mentorship status ('pending', 'active', 'completed', 'cancelled') ensuring unique Mentor-Mentee pairings.
+- FR3.4: Mentors can assign and track 'Mentor Tasks' for mentees, logging due dates and progress statuses ('pending', 'in_progress', 'completed').
+
+Module 4: Goal Management
+- FR4.1: Users must be able to create wellness, academic, or personal goals.
+- FR4.2: System must track integer-based progress (0-100) and discrete completion status (0 or 1).
+
+Module 5: Gamification (Reactions & Streaks)
+- FR5.1: Users can react to platform content (post, comment, journal, resource). The DB must track 'target_type' and 'target_id'.
+- FR5.2: System runs calculations to track current and historical longest reaction streaks per user.
+
+--------------------------------------------------------------------------------
+5. DATA MODELLING FEATURES, DATA DICTIONARY, RELATIONAL DATABASE DESIGN
+--------------------------------------------------------------------------------
+A. Relational Database Design & Schema Mapping:
+The system utilizes PostgreSQL with strict normalization.
+- Entities: Users, MoodEntries, Goals, Mentors, Mentees, Mentorships, MentorTasks, Reactions, ReactionStreaks.
+- Relationships:
+  - User (1) to MoodEntries (M) 
+  - User (1) to Goals (M)
+  - Mentor (1) to Mentorships (M)
+  - Mentee (1) to Mentorships (M)
+  - Mentorship (1) to MentorTasks (M)
+
+B. Data Dictionary (Key Tables):
+
+1. TABLE: `users`
+| Column   | Data Type    | Constraints                  | Description                     |
+|----------|--------------|------------------------------|---------------------------------|
+| id       | VARCHAR      | Primary Key, gen_random_uuid | Unique UUID for system users    |
+| username | TEXT         | NOT NULL, UNIQUE             | User's chosen login name        |
+| password | TEXT         | NOT NULL                     | Bcrypt hashed password          |
+
+2. TABLE: `mood_entries`
+| Column    | Data Type| Constraints                         | Description                  |
+|-----------|----------|-------------------------------------|------------------------------|
+| id        | VARCHAR  | Primary Key, default UUID           | Internal entry ID            |
+| user_id   | VARCHAR  | NOT NULL, Foreign Key(users)        | Owner of the log             |
+| mood_value| INTEGER  | NOT NULL, CHECK(1 to 5)             | Wellness score (1 to 5)      |
+| date      | DATE     | NOT NULL                            | Date of logging              |
+| notes     | TEXT     | Nullable                            | Journal description          |
+| created_at| TIMESTAMP| DEFAULT NOW()                       | Audit timestamp              |
+* Note: Composite Unique Constraint applied on (userId, date).
+
+3. TABLE: `mentorships`
+| Column     | Data Type| Constraints                         | Description                       |
+|------------|----------|-------------------------------------|-----------------------------------|
+| id         | VARCHAR  | Primary Key, default UUID           | Unique pairing ID                 |
+| mentor_id  | VARCHAR  | NOT NULL, Foreign Key(mentors)      | The mentor UUID                   |
+| mentee_id  | VARCHAR  | NOT NULL, Foreign Key(mentees)      | The mentee UUID                   |
+| status     | TEXT     | NOT NULL                            | 'pending', 'active', 'completed'  |
+| start_date | DATE     | Nullable                            | When mentorship began             |
+* Note: Composite Unique Constraint applied on (mentorId, menteeId).
+
+4. TABLE: `goals`
+| Column        | Data Type| Constraints                     | Description                     |
+|---------------|----------|---------------------------------|---------------------------------|
+| id            | VARCHAR  | Primary Key, default UUID       | Goal ID                         |
+| user_id       | VARCHAR  | NOT NULL, Foreign Key(users)    | Associated user                 |
+| title         | TEXT     | NOT NULL                        | Goal title                      |
+| category      | TEXT     | NOT NULL                        | 'wellness','academic','personal'|
+| progress      | INTEGER  | DEFAULT 0                       | Percentage (0-100)              |
+| is_completed  | INTEGER  | DEFAULT 0                       | Boolean mapped (0=No, 1=Yes)    |
+
+--------------------------------------------------------------------------------
+6. GRAPHICAL USER INTERFACE (GUI)
+--------------------------------------------------------------------------------
+[INSTRUCTIONS FOR STUDENT: Insert actual screenshots of your running app]
+Provide 4-5 screenshots of your frontend interfacing with the database.
+1. Registration/Login Form (Proves User insertion into `users`).
+2. Mood Tracker Dashboard (Proves `mood_entries` SELECT and aggregation).
+3. Mentorship Matching Page (Proves queries combining `mentors` and `mentees`).
+4. Goal Tracker UI (Proves CRUD operations on the `goals` table).
+
+Caption each image. Example: "Figure 1: User Dashboard displaying Aggregated Mood Analytics queried from PostgreSQL."
+
+--------------------------------------------------------------------------------
+7. SOURCE CODE (IMPORTANT DBMS MODULES)
+--------------------------------------------------------------------------------
+Highlighting how the database layer is implemented using Drizzle ORM.
+
+CODE SNIPPET 1: Drizzle Table Definition with Constraints
+This snippet defines the Mood Entries table, demonstrating how composite unique 
+keys prevent duplicate data entry on the database level.
+
+```typescript
+export const moodEntries = pgTable("mood_entries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  moodValue: integer("mood_value").notNull(), // 1-5 scale
+  date: date("date").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  // DBMS LEVEL COMPOSITE CONSTRAINT prevents double logging per day
+  uniqueUserDate: unique().on(table.userId, table.date),
+}));
+```
+
+CODE SNIPPET 2: Relational Integrity in Mentorships
+Demonstrating structural mapping for the complex many-to-many resolution table 
+between Mentors and Mentees.
+
+```typescript
+export const mentorships = pgTable("mentorships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mentorId: varchar("mentor_id").notNull(),
+  menteeId: varchar("mentee_id").notNull(),
+  status: text("status").notNull(), // 'pending', 'active', 'completed'
+  startDate: date("start_date"),
+  endDate: date("end_date")
+}, (table) => ({
+  uniqueMentorship: unique().on(table.mentorId, table.menteeId),
+}));
+```
+
+CODE SNIPPET 3: API Level Schema Validation
+Before inserting into the database, incoming data structures are validated preventing malformed data.
+
+```typescript
+export const apiCreateGoalSchema = z.object({
+  title: z.string().min(1).max(200),
+  category: z.enum(["wellness", "academic", "personal"]),
+  targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+});
+```
+
+================================================================================
+END OF REPORT
+================================================================================

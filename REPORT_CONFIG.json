@@ -1,0 +1,111 @@
+{
+  "metadata": {
+    "university": "SAVITRIBAI PHULE PUNE UNIVERSITY",
+    "college": "PIMPRI CHINCHWAD COLLEGE OF ENGINEERING (PCCOE), PUNE",
+    "department": "Department of Information Technology",
+    "projectTitle": "CLARITY",
+    "projectSubtitle": "An AI-Driven Mental Health and Student Support Platform",
+    "academicYear": "2025-26",
+    "semester": "V (OE-5)",
+    "guide": "Mrs. Babita Sonare"
+  },
+  "styles": {
+    "colors": {
+      "primary": "1F4E79",
+      "secondary": "2E75B6",
+      "accent": "1A7A6E",
+      "darkGrey": "404040",
+      "lightGrey": "F5F5F5",
+      "headerBg": "1F4E79",
+      "headerText": "FFFFFF",
+      "borderColor": "CCCCCC"
+    },
+    "fonts": {
+      "headings": "Times New Roman",
+      "body": "Times New Roman",
+      "code": "Consolas"
+    },
+    "spacing": {
+      "heading1Before": 480,
+      "heading1After": 240,
+      "heading2Before": 360,
+      "heading2After": 180,
+      "paragraphBefore": 100,
+      "paragraphAfter": 140,
+      "lineHeight": 360,
+      "tableSpaceBefore": 320,
+      "tableSpaceAfter": 320
+    }
+  },
+  "sections": [
+    {
+      "id": "abstract",
+      "title": "ABSTRACT",
+      "type": "section",
+      "content": "Mental health disorders among university students remain critically underaddressed due to prevailing social stigma, insufficient institutional resources, and the absence of accessible, privacy-respecting digital intervention tools. Studies indicate that over 35% of undergraduate students globally experience clinically significant psychological distress, yet fewer than 20% seek formal counseling. This gap necessitates a technology-driven, stigma-free support ecosystem.\n\nClarity is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) web platform engineered to bridge this gap. The system employs a document-oriented NoSQL schema (MongoDB) to manage heterogeneous data structures arising from anonymous peer forums, AI conversation logs, and longitudinal mood telemetry. A JWT-secured authentication layer with bcrypt hashing ensures user identity protection, while role-based access control (RBAC) enforces data segregation between students, counselors, and administrators.\n\nThe AI module integrates NLP-based regex pattern matching and keyword corpus analysis for real-time crisis detection, triggering automated SOS escalations to designated counselors. The mood tracking subsystem persists daily affective state logs, enabling time-series visualization via Chart.js-powered dashboards. An anti-ragging portal provides anonymized grievance submission with admin-level case management. Clarity does not serve as a clinical diagnostic tool; rather, it functions as a supplementary mental wellness infrastructure, ultimately reducing the average time-to-support for at-risk students from weeks to minutes."
+    },
+    {
+      "id": "introduction",
+      "title": "INTRODUCTION",
+      "type": "section",
+      "content": "The intersection of academic performance pressure, social isolation, financial stress, and identity formation renders university students disproportionately vulnerable to psychological distress. The World Health Organization (WHO) identifies depression and anxiety as leading causes of disability among individuals aged 18–24. Traditional institutional counseling services are constrained by appointment bottlenecks, geographic inaccessibility, and the persistent stigma that deters self-referral. Digital mental health platforms have demonstrated clinical efficacy in adjunctive roles, offering scalability, 24/7 availability, and measurable outcome tracking unavailable in conventional models.\n\nClarity provides a stigma-free, technology-driven environment for psychological self-monitoring, peer support, and graduated crisis escalation. The platform is designed to:\n• Lower the activation barrier for students seeking mental health resources.\n• Enable longitudinal mood data collection without clinical overhead.\n• Provide automated, real-time crisis triage through AI-driven detection.\n• Facilitate anonymous peer interaction to reduce isolation-driven distress.\n• Equip institutional administrators with aggregated wellness analytics for policy decisions."
+    },
+    {
+      "id": "dataModeling",
+      "title": "DATA MODELLING & DATABASE DESIGN",
+      "type": "section",
+      "subsections": [
+        {
+          "subtitle": "Rationale for MongoDB (NoSQL)",
+          "content": "Clarity's data landscape is inherently heterogeneous and schema-volatile. Forum posts vary structurally based on media attachments, thread depth, and moderation metadata. AI conversation logs grow dynamically with variable message counts per session. Mood journal entries incorporate optional free-text fields. These characteristics make a fixed relational schema inefficient."
+        },
+        {
+          "subtitle": "Entity Relationships",
+          "content": "Users → MoodLogs (1:M): One user document can reference many MoodLog documents via userId foreign key. The compound unique index on {userId, date} enforces the one-log-per-user-per-day business rule at the database level.\n\nUsers → Posts (1:M via hash): Users author many forum posts; however, the direct userId is not stored in the Posts collection.\n\nUsers → Complaints (1:M): A single student may submit multiple anti-ragging complaints. Each complaint document embeds a status field for workflow state tracking."
+        }
+      ]
+    },
+    {
+      "id": "usersTable",
+      "title": "USERS Collection Schema",
+      "type": "table",
+      "headers": ["Field Name", "Type", "Constraints", "Description"],
+      "rows": [
+        ["_id", "ObjectId", "PRIMARY KEY, Auto", "MongoDB-generated unique document identifier"],
+        ["userId", "String", "Unique", "Application-level user identifier (USR-{TS}-{RND})"],
+        ["name", "String", "Required, Trim", "Full legal name of the registered user"],
+        ["email", "String", "Required, Unique, Lowercase", "Institutional email address; serves as login identifier"],
+        ["passwordHash", "String", "Required, Select: false", "bcrypt hash of plaintext password; excluded from default queries"],
+        ["role", "String (Enum)", "Default: 'student'", "Access role: 'student' | 'counselor' | 'admin'"],
+        ["department", "String", "Optional", "Academic department affiliation for analytics aggregation"],
+        ["assignedCounselor", "ObjectId", "Ref: Users, Optional", "Foreign key linking student to designated counselor"],
+        ["isFlagged", "Boolean", "Default: false", "Counselor-set flag for at-risk status"],
+        ["createdAt", "Date", "Auto (timestamps)", "Document creation timestamp"],
+        ["updatedAt", "Date", "Auto (timestamps)", "Document last-modified timestamp"]
+      ]
+    },
+    {
+      "id": "moodTable",
+      "title": "MOOD_LOGS Collection Schema",
+      "type": "table",
+      "headers": ["Field Name", "Type", "Constraints", "Description"],
+      "rows": [
+        ["_id", "ObjectId", "PRIMARY KEY, Auto", "MongoDB-generated unique document identifier"],
+        ["entryId", "String", "Unique", "MOOD-{TS}-{RND}"],
+        ["userId", "ObjectId", "Required, Ref: Users, Index", "Foreign key referencing the authoring user"],
+        ["date", "Date", "Required, Index", "Calendar date of log entry (normalized to UTC midnight)"],
+        ["moodScore", "Number", "Required, Min: 1, Max: 10", "Numeric mood rating on a 1–10 Likert scale"],
+        ["emotionTag", "String (Enum)", "Required", "Categorical label: 'happy'|'sad'|'anxious'|'angry'|'neutral'|'overwhelmed'"],
+        ["journalEntry", "String", "Optional, MaxLen: 500", "Free-text self-reflection field; stored encrypted at rest"],
+        ["isReviewed", "Boolean", "Default: false", "Counselor review flag; set true upon counselor acknowledgment"],
+        ["createdAt", "Date", "Auto (timestamps)", "Entry creation timestamp; used for audit and deduplication"]
+      ]
+    },
+    {
+      "id": "conclusion",
+      "title": "CONCLUSION",
+      "type": "section",
+      "content": "Clarity successfully demonstrates the viability of a MERN-stack, NoSQL-backed mental health support infrastructure within an academic environment. The platform achieves its primary design objectives: zero-barrier entry to psychological self-monitoring through JWT-secured authentication, real-time crisis triage through NLP-driven keyword detection, and community-level support via cryptographically anonymized peer forums.\n\nThe MongoDB document model proved decisively advantageous for this domain. The schema-flexible nature of BSON documents accommodated evolving requirements across the mood logging, AI conversation, and forum subsystems without requiring disruptive migrations. Mongoose's application-layer schema enforcement maintained data integrity while preserving the agility required during iterative development cycles."
+    }
+  ]
+}

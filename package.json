@@ -14,7 +14,11 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "setup": "npm install && npm run setup:env",
-    "setup:env": "node -e \"const fs = require('fs'); if (!fs.existsSync('.env')) { fs.copyFileSync('.env.example', '.env'); console.log('.env file created from .env.example'); } else { console.log('.env file already exists'); }\""
+    "setup:env": "node -e \"const fs = require('fs'); if (!fs.existsSync('.env')) { fs.copyFileSync('.env.example', '.env'); console.log('.env file created from .env.example'); } else { console.log('.env file already exists'); }\"",
+    "report:dbms": "node scripts/generate-dbms-report.cjs",
+    "report:dbms:open": "npm run report:dbms && node scripts/open-latest-report.cjs",
+    "report:json": "node scripts/generate-report-json.cjs",
+    "report:json:open": "npm run report:json && node scripts/open-latest-report.cjs"
   },
   "dependencies": {
     "@capacitor/cli": "^7.4.3",
@@ -61,6 +65,7 @@
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
+    "docx": "^9.0.3",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.0",
@@ -116,6 +121,7 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
+    "baseline-browser-mapping": "^2.10.17",
     "cross-env": "^10.0.0",
     "drizzle-kit": "^0.18.1",
     "esbuild": "^0.25.0",

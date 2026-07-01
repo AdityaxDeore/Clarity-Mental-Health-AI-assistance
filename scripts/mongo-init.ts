@@ -26,198 +26,157 @@ const shouldDrop = args.includes("--drop");
 async function seedSampleData() {
   console.log("\n[Init] Seeding ER-model sample data...");
 
-  const scheduleDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+  const users = [
+    { userId: "USR-001", email: "rahul@example.com", password: "hash_user_1", firstName: "Rahul", lastName: "Sharma" },
+    { userId: "USR-002", email: "neha@example.com", password: "hash_user_2", firstName: "Neha", lastName: "Patil" },
+    { userId: "USR-003", email: "arjun@example.com", password: "hash_user_3", firstName: "Arjun", lastName: "Verma" },
+    { userId: "USR-004", email: "sneha@example.com", password: "hash_user_4", firstName: "Sneha", lastName: "Rao" },
+    { userId: "USR-005", email: "manav@example.com", password: "hash_user_5", firstName: "Manav", lastName: "Singh" },
+    { userId: "USR-006", email: "aarti@example.com", password: "hash_thr_1", firstName: "Aarti", lastName: "Kulkarni" },
+    { userId: "USR-007", email: "rohan@example.com", password: "hash_thr_2", firstName: "Rohan", lastName: "Nair" },
+    { userId: "USR-008", email: "kiran@example.com", password: "hash_thr_3", firstName: "Kiran", lastName: "Mehta" },
+    { userId: "USR-009", email: "pooja@example.com", password: "hash_thr_4", firstName: "Pooja", lastName: "Iyer" },
+    { userId: "USR-010", email: "vivek@example.com", password: "hash_thr_5", firstName: "Vivek", lastName: "Joshi" },
+  ];
 
-  const userId = "USR-001";
-  const therapistUserId = "USR-002";
-  const therapistId = "THR-001";
-  const supervisorId = "SUP-001";
-  const apptId = "APT-001";
-  const gatewayId = "GTW-001";
-  const paymentId = "PAY-001";
-  const resourceId = "RES-001";
-  const entryId = "ENT-001";
-  const journalId = "JRN-001";
-  const goalId = "GOL-001";
-  const contactId = "EMC-001";
-  const diagnosisId = "DGN-001";
-  const userDiagId = "UDG-001";
-  const assessmentId = "ASM-001";
-  const questionId = "QST-001";
-  const userAssessId = "UAS-001";
+  const supervisors = [
+    { supervisorId: "SUP-001", name: "Dr. Priya Menon", contact: "+91-9000000001" },
+    { supervisorId: "SUP-002", name: "Dr. Anand Kulkarni", contact: "+91-9000000002" },
+    { supervisorId: "SUP-003", name: "Dr. Seema Arora", contact: "+91-9000000003" },
+    { supervisorId: "SUP-004", name: "Dr. Tarun Gupta", contact: "+91-9000000004" },
+    { supervisorId: "SUP-005", name: "Dr. Nisha Reddy", contact: "+91-9000000005" },
+  ];
 
-  // USERS
-  await insertMany(COLLECTIONS.USERS, [
-    {
-      userId,
-      email: "rahul@example.com",
-      password: "hashed_password_user",
-      firstName: "Rahul",
-      lastName: "Sharma",
-    },
-    {
-      userId: therapistUserId,
-      email: "aarti@example.com",
-      password: "hashed_password_therapist",
-      firstName: "Aarti",
-      lastName: "Kulkarni",
-    },
-  ]);
+  const therapists = [
+    { therapistId: "THR-001", userId: "USR-006", supervisorId: "SUP-001", licenseNo: "LIC-MH-001", specialization: "Anxiety" },
+    { therapistId: "THR-002", userId: "USR-007", supervisorId: "SUP-002", licenseNo: "LIC-MH-002", specialization: "Depression" },
+    { therapistId: "THR-003", userId: "USR-008", supervisorId: "SUP-003", licenseNo: "LIC-MH-003", specialization: "Trauma" },
+    { therapistId: "THR-004", userId: "USR-009", supervisorId: "SUP-004", licenseNo: "LIC-MH-004", specialization: "Stress" },
+    { therapistId: "THR-005", userId: "USR-010", supervisorId: "SUP-005", licenseNo: "LIC-MH-005", specialization: "Sleep Issues" },
+  ];
 
-  // SUPERVISOR
-  await insertMany(COLLECTIONS.SUPERVISORS, [
-    {
-      supervisorId,
-      name: "Dr. Priya Menon",
-      contact: "+91-9000000001",
-    },
-  ]);
+  const gateways = [
+    { gatewayId: "GTW-001", name: "Razorpay", transactionFee: 2.0 },
+    { gatewayId: "GTW-002", name: "Stripe", transactionFee: 2.4 },
+    { gatewayId: "GTW-003", name: "PayU", transactionFee: 1.9 },
+    { gatewayId: "GTW-004", name: "PhonePe", transactionFee: 1.8 },
+    { gatewayId: "GTW-005", name: "Paytm", transactionFee: 2.1 },
+  ];
 
-  // THERAPISTS
-  await insertMany(COLLECTIONS.THERAPISTS, [
-    {
-      therapistId,
-      userId: therapistUserId,
-      supervisorId,
-      licenseNo: "LIC-MH-001",
-      specialization: "Anxiety",
-    },
-  ]);
+  const userIds = ["USR-001", "USR-002", "USR-003", "USR-004", "USR-005"];
+  const therapistIds = ["THR-001", "THR-002", "THR-003", "THR-004", "THR-005"];
 
-  // APPOINTMENTS
-  await insertMany(COLLECTIONS.APPOINTMENTS, [
-    {
-      apptId,
-      userId,
-      therapistId,
-      schedule: scheduleDate,
-    },
-  ]);
+  const appointments = Array.from({ length: 8 }, (_, i) => ({
+    apptId: `APT-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i % userIds.length],
+    therapistId: therapistIds[i % therapistIds.length],
+    schedule: new Date(Date.now() + (i + 1) * 24 * 60 * 60 * 1000),
+  }));
 
-  // PAYMENT_GATEWAY
-  await insertMany(COLLECTIONS.PAYMENT_GATEWAYS, [
-    {
-      gatewayId,
-      name: "Razorpay",
-      transactionFee: 2.0,
-    },
-  ]);
+  const payments = appointments.map((appt, i) => ({
+    paymentId: `PAY-${String(i + 1).padStart(3, "0")}`,
+    apptId: appt.apptId,
+    therapistId: appt.therapistId,
+    gatewayId: gateways[i % gateways.length].gatewayId,
+    amount: 1000 + i * 150,
+    date: new Date(Date.now() - i * 12 * 60 * 60 * 1000),
+    method: ["upi", "card", "netbanking", "wallet", "cash"][i % 5],
+  }));
 
-  // PAYMENT
-  await insertMany(COLLECTIONS.PAYMENTS, [
-    {
-      paymentId,
-      apptId,
-      therapistId,
-      gatewayId,
-      amount: 1200,
-      date: new Date(),
-      method: "upi",
-    },
-  ]);
+  const resources = Array.from({ length: 7 }, (_, i) => ({
+    resourceId: `RES-${String(i + 1).padStart(3, "0")}`,
+    therapistId: therapistIds[i % therapistIds.length],
+    title: `Mental wellness resource ${i + 1}`,
+    description: `Helpful guidance content ${i + 1}`,
+    type: ["article", "video", "podcast", "worksheet", "guide"][i % 5],
+  }));
 
-  // RESOURCES
-  await insertMany(COLLECTIONS.RESOURCES, [
-    {
-      resourceId,
-      therapistId,
-      title: "5 minute grounding exercise",
-      description: "Simple daily grounding practice",
-      type: "article",
-    },
-  ]);
+  const moodEntries = Array.from({ length: 10 }, (_, i) => ({
+    entryId: `ENT-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i % userIds.length],
+    moodLv: (i % 5) + 1,
+    notes: `Mood entry note ${i + 1}`,
+    date: new Date(Date.now() - i * 24 * 60 * 60 * 1000),
+  }));
 
-  // MOOD_ENTRIES
-  await insertMany(COLLECTIONS.MOOD_ENTRIES, [
-    {
-      entryId,
-      userId,
-      moodLv: 4,
-      notes: "Feeling better today",
-      date: new Date(),
-    },
-  ]);
+  const journalEntries = Array.from({ length: 8 }, (_, i) => ({
+    journalId: `JRN-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i % userIds.length],
+    title: `Journal Day ${i + 1}`,
+    content: `Reflection content for day ${i + 1}.`,
+  }));
 
-  // JOURNAL_ENTRIES
-  await insertMany(COLLECTIONS.JOURNAL_ENTRIES, [
-    {
-      journalId,
-      userId,
-      title: "Daily reflection",
-      content: "Practiced breathing and mindfulness.",
-    },
-  ]);
+  const goals = Array.from({ length: 8 }, (_, i) => ({
+    goalId: `GOL-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i % userIds.length],
+    title: `Goal ${i + 1}`,
+    status: ["planned", "in_progress", "completed"][i % 3],
+  }));
 
-  // GOALS
-  await insertMany(COLLECTIONS.GOALS, [
-    {
-      goalId,
-      userId,
-      title: "Sleep by 11 PM",
-      status: "in_progress",
-    },
-  ]);
+  const emergencyContacts = Array.from({ length: 5 }, (_, i) => ({
+    contactId: `EMC-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i],
+    name: `Emergency Contact ${i + 1}`,
+    phone: `+91-98888000${i + 1}`,
+  }));
 
-  // EMERGENCY_CONTACTS
-  await insertMany(COLLECTIONS.EMERGENCY_CONTACTS, [
-    {
-      contactId,
-      userId,
-      name: "Aman Sharma",
-      phone: "+91-9000000002",
-    },
-  ]);
+  const diagnoses = [
+    { diagnosisId: "DGN-001", name: "Generalized Anxiety Disorder", icdCode: "F41.1" },
+    { diagnosisId: "DGN-002", name: "Major Depressive Disorder", icdCode: "F32.1" },
+    { diagnosisId: "DGN-003", name: "Panic Disorder", icdCode: "F41.0" },
+    { diagnosisId: "DGN-004", name: "PTSD", icdCode: "F43.1" },
+    { diagnosisId: "DGN-005", name: "Adjustment Disorder", icdCode: "F43.2" },
+    { diagnosisId: "DGN-006", name: "Insomnia", icdCode: "F51.0" },
+  ];
 
-  // DIAGNOSIS
-  await insertMany(COLLECTIONS.DIAGNOSES, [
-    {
-      diagnosisId,
-      name: "Generalized Anxiety Disorder",
-      icdCode: "F41.1",
-    },
-  ]);
+  const assessments = [
+    { assessmentId: "ASM-001", name: "PHQ-9", category: "depression" },
+    { assessmentId: "ASM-002", name: "GAD-7", category: "anxiety" },
+    { assessmentId: "ASM-003", name: "PSS", category: "stress" },
+    { assessmentId: "ASM-004", name: "WHO-5", category: "wellbeing" },
+    { assessmentId: "ASM-005", name: "ISI", category: "sleep" },
+  ];
 
-  // ASSESSMENTS
-  await insertMany(COLLECTIONS.ASSESSMENTS, [
-    {
-      assessmentId,
-      name: "PHQ-9",
-      category: "depression",
-    },
-  ]);
+  const assessmentQuestions = Array.from({ length: 10 }, (_, i) => ({
+    questionId: `QST-${String(i + 1).padStart(3, "0")}`,
+    assessmentId: assessments[i % assessments.length].assessmentId,
+    supervisorId: supervisors[i % supervisors.length].supervisorId,
+    questionText: `Assessment question ${i + 1}?`,
+  }));
 
-  // ASSESSMENT_QUESTIONS
-  await insertMany(COLLECTIONS.ASSESSMENT_QUESTIONS, [
-    {
-      questionId,
-      assessmentId,
-      questionText: "Little interest or pleasure in doing things?",
-      supervisorId,
-    },
-  ]);
+  const userAssessments = Array.from({ length: 8 }, (_, i) => ({
+    userAssessId: `UAS-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i % userIds.length],
+    assessId: assessments[i % assessments.length].assessmentId,
+    assignedTherapistId: therapistIds[i % therapistIds.length],
+    assignedSupervisorId: supervisors[i % supervisors.length].supervisorId,
+    totalScore: 4 + i,
+  }));
 
-  // USER_ASSESSMENTS
-  await insertMany(COLLECTIONS.USER_ASSESSMENTS, [
-    {
-      userAssessId,
-      userId,
-      assessId: assessmentId,
-      assignedTherapistId: therapistId,
-      assignedSupervisorId: supervisorId,
-      totalScore: 6,
-    },
-  ]);
+  const userDiagnoses = Array.from({ length: 6 }, (_, i) => ({
+    userDiagId: `UDG-${String(i + 1).padStart(3, "0")}`,
+    userId: userIds[i % userIds.length],
+    diagnosisId: diagnoses[i].diagnosisId,
+    assessId: assessments[i % assessments.length].assessmentId,
+    severity: ["mild", "moderate", "severe"][i % 3],
+  }));
 
-  // USER_DIAGNOSES
-  await insertMany(COLLECTIONS.USER_DIAGNOSES, [
-    {
-      userDiagId,
-      userId,
-      diagnosisId,
-      assessId: assessmentId,
-      severity: "moderate",
-    },
-  ]);
+  await insertMany(COLLECTIONS.USERS, users);
+  await insertMany(COLLECTIONS.SUPERVISORS, supervisors);
+  await insertMany(COLLECTIONS.THERAPISTS, therapists);
+  await insertMany(COLLECTIONS.APPOINTMENTS, appointments);
+  await insertMany(COLLECTIONS.PAYMENT_GATEWAYS, gateways);
+  await insertMany(COLLECTIONS.PAYMENTS, payments);
+  await insertMany(COLLECTIONS.RESOURCES, resources);
+  await insertMany(COLLECTIONS.MOOD_ENTRIES, moodEntries);
+  await insertMany(COLLECTIONS.JOURNAL_ENTRIES, journalEntries);
+  await insertMany(COLLECTIONS.GOALS, goals);
+  await insertMany(COLLECTIONS.EMERGENCY_CONTACTS, emergencyContacts);
+  await insertMany(COLLECTIONS.DIAGNOSES, diagnoses);
+  await insertMany(COLLECTIONS.ASSESSMENTS, assessments);
+  await insertMany(COLLECTIONS.ASSESSMENT_QUESTIONS, assessmentQuestions);
+  await insertMany(COLLECTIONS.USER_ASSESSMENTS, userAssessments);
+  await insertMany(COLLECTIONS.USER_DIAGNOSES, userDiagnoses);
 
   console.log("[Init] ✅ ER-model sample data seeded");
 }

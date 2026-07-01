@@ -2,6 +2,75 @@
 
 A comprehensive digital mental health platform designed specifically for students. Clarity provides AI-powered wellness support, mood tracking, peer community features, creative expression tools, and crisis intervention resources.
 
+## 📱 Screenshots & Feature Walkthrough
+
+The gallery below highlights the Clarity experience across mobile and web surfaces. Screens are grouped by workflow so the README reads like product documentation instead of a raw asset dump.
+
+### Mobile Experience
+
+#### Welcome and Home Flow
+
+| Screen | Preview | Focus |
+| --- | --- | --- |
+| Welcome to Clarity | ![Welcome to Clarity](./clarity%20images/file_00000000be4071fd9786c407acceced3.png) | Main landing dashboard with quick access to core modules |
+| Personalized Home Dashboard | ![Personalized Home Dashboard](./clarity%20images/file_000000008ad071fd9ece6a817d96fd81.png) | Greeting, mood indicators, and recommendations |
+| Daily Wellness Dashboard | ![Daily Wellness Dashboard](./clarity%20images/file_000000008d64720c827a44c43c064896.png) | Mood check-in, sleep tracking, and wellness suggestions |
+| Clarity Entry Screen | ![Clarity Entry Screen](./clarity%20images/file_000000002140722f84027d605cb19ef7.png) | Entry point into the main wellness modules |
+
+#### AI Support and Progress
+
+| Screen | Preview | Focus |
+| --- | --- | --- |
+| AI Emotional Support | ![AI Emotional Support](./clarity%20images/file_00000000890c71f8bed7941010f7c855.png) | Emotional analysis and support recommendations |
+| Growth Journey Dashboard | ![Growth Journey Dashboard](./clarity%20images/file_00000000b834720cb8c901a188d4ce6d.png) | Weekly stats, milestones, and progress analytics |
+| AI Chat Interface | ![AI Chat Interface](./clarity%20images/Screenshot_2026_0529_124702.jpg) | Conversational support with contextual responses |
+| Mental Health Assessment | ![Mental Health Assessment](./clarity%20images/Screenshot_2026_0529_124747.jpg) | Questionnaire-based screening and guidance |
+
+#### Wellness Tools
+
+| Screen | Preview | Focus |
+| --- | --- | --- |
+| Quick Actions Dashboard | ![Quick Actions Dashboard](./clarity%20images/Screenshot_2026_0529_124340.jpg) | Fast access to AI Buddy, Diary, Peer Support, and Resources |
+| Compact Home Screen | ![Compact Home Screen](./clarity%20images/Screenshot_2026_0529_124400.jpg) | Simplified mobile navigation |
+| Mood Selection Interface | ![Mood Selection Interface](./clarity%20images/Screenshot_2026_0529_124416.jpg) | Emotion picker and daily reflection |
+| Recommendation Pop-up | ![Recommendation Pop-up](./clarity%20images/Screenshot_2026_0529_124428.jpg) | Activity suggestions and wellness notifications |
+| AI Buddy Recommendation | ![AI Buddy Recommendation](./clarity%20images/Screenshot_2026_0529_124510.jpg) | Support summary and coping strategies |
+| Daily Check-In | ![Daily Check-In](./clarity%20images/Screenshot_2026_0529_124527.jpg) | Mood tracking and reflection notes |
+| Module Navigation | ![Module Navigation](./clarity%20images/Screenshot_2026_0529_124539.jpg) | Vertical navigation across app sections |
+| Weekly Progress Analytics | ![Weekly Progress Analytics](./clarity%20images/Screenshot_2026_0529_124553.jpg) | Weekly score, streaks, and completed activities |
+| Wellness Center | ![Wellness Center](./clarity%20images/Screenshot_2026_0529_124834.jpg) | Audio sessions and wellness recommendations |
+| Wellness Audio Library | ![Wellness Audio Library](./clarity%20images/Screenshot_2026_0529_124853.jpg) | Meditation, sleep, and relaxation audio content |
+
+### Web Experience
+
+#### Support and Community
+
+| Screen | Preview | Focus |
+| --- | --- | --- |
+| Goal Tracker Dashboard | ![Goal Tracker Dashboard](./clarity%20images/Screenshot_2026_0529_124912.jpg) | Goal completion, progress bars, and daily tasks |
+| Buddy Chat Web Interface | ![Buddy Chat Web Interface](./clarity%20images/Screenshot_2026_0529_124954.jpg) | Web-based AI conversation support |
+| Emergency Assistance Interface | ![Emergency Assistance Interface](./clarity%20images/Screenshot_2026_0529_125018.jpg) | Crisis support and immediate help options |
+| Sawangadi Program Overview | ![Sawangadi Program Overview](./clarity%20images/Screenshot_2026_0529_125051.jpg) | Peer mentorship program overview |
+| Sawangadi Registration Form | ![Sawangadi Registration Form](./clarity%20images/Screenshot_2026_0529_125101.jpg) | Enrollment and preference capture |
+| Counselor Connect Dashboard | ![Counselor Connect Dashboard](./clarity%20images/Screenshot_2026_0529_125133.jpg) | Therapist directory and booking flow |
+| Student Support Communities | ![Student Support Communities](./clarity%20images/Screenshot_2026_0529_125149.jpg) | Community categories and support forums |
+| Community Discovery Page | ![Community Discovery Page](./clarity%20images/Screenshot_2026_0529_125253.jpg) | Search, trending groups, and join requests |
+| Peer Support Dashboard | ![Peer Support Dashboard](./clarity%20images/Screenshot_2026_0529_125306.jpg) | Support requests and moderation tools |
+| Clarity Connect Feed | ![Clarity Connect Feed](./clarity%20images/Screenshot_2026_0529_125325.jpg) | Community discussions and shared experiences |
+| Mental Health Resources Hub | ![Mental Health Resources Hub](./clarity%20images/Screenshot_2026_0529_125335.jpg) | Educational resources and curated wellness content |
+
+#### Safety and Expression
+
+| Screen | Preview | Focus |
+| --- | --- | --- |
+| Creative Expression Zone | ![Creative Expression Zone](./clarity%20images/Screenshot_2026_0529_125356.jpg) | Digital drawing and expressive therapy tools |
+| Crisis Support Dashboard | ![Crisis Support Dashboard](./clarity%20images/Screenshot_2026_0529_125410.jpg) | Crisis escalation and emergency resources |
+| Pet Care Dashboard | ![Pet Care Dashboard](./clarity%20images/Screenshot20260529_124935.jpg) | Gamified wellness companion and habit rewards |
+
+### Asset Archive
+
+The exported screenshot bundle and supporting media used for documentation are included in the project assets archive: [drive-download-20260630T104744Z-3-001.zip](./clarity%20images/drive-download-20260630T104744Z-3-001.zip).
+
 ## 🌟 Features
 
 ### 🤖 AI Wellness Buddy

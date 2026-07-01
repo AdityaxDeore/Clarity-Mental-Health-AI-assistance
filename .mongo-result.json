@@ -1,0 +1,13 @@
+{
+  "username": "user_1775743003862",
+  "foundUser": true,
+  "matchedDocument": {
+    "_id": "69d7b01c16a122d7acd8703e",
+    "userId": "USR-1775743004163",
+    "username": "user_1775743003862",
+    "email": "user_1775743003862@example.com",
+    "password": "[REDACTED]",
+    "firstName": "Test",
+    "lastName": "User"
+  }
+}
