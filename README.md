@@ -70,7 +70,7 @@ The gallery below highlights the Clarity experience across mobile and web surfac
 | --- | --- | --- |
 | Creative Expression Zone | ![Creative Expression Zone](./clarity%20images/Screenshot_2026_0529_125356.jpg) | Digital drawing and expressive therapy tools |
 | Crisis Support Dashboard | ![Crisis Support Dashboard](./clarity%20images/Screenshot_2026_0529_125410.jpg) | Crisis escalation and emergency resources |
-| Pet Care Dashboard | ![Pet Care Dashboard](./clarity%20images/Screenshot20260529_124935.jpg) | Gamified wellness companion and habit rewards |
+| Pet Care Dashboard | ![Pet Care Dashboard](./clarity%20images/Screenshot_20260529_124935.jpg) | Gamified wellness companion and habit rewards |
 
 ### Asset Archive
 
