@@ -1,6 +1,11 @@
 # Clarity 🧠✨
 
+[![Stars](https://img.shields.io/github/stars/AdityaxDeore/Clarity-Mental-Health-AI-assistance)](https://github.com/AdityaxDeore/Clarity-Mental-Health-AI-assistance/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A comprehensive digital mental health platform designed specifically for students. Clarity provides AI-powered wellness support, mood tracking, peer community features, creative expression tools, and crisis intervention resources.
+
+**Live demo:** https://adityaxdeore.github.io/Clarity-Mental-Health-AI-assistance/ — built for Smart India Hackathon 2025 (Digital Mental Health and Psychological Support System for Students in Higher Education).
 
 ## 📱 Screenshots & Feature Walkthrough
 
@@ -134,8 +139,8 @@ For a **complete and detailed technical documentation** of our entire stack, see
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/Clarity.git
-   cd Clarity
+   git clone https://github.com/AdityaxDeore/Clarity-Mental-Health-AI-assistance.git
+   cd Clarity-Mental-Health-AI-assistance
    ```
 
 2. **Quick Setup (Recommended)**
@@ -186,7 +191,7 @@ If you're experiencing issues with GitHub Pages showing the README file instead 
 ## 🏗️ Project Structure
 
 ```bash
-Clarity/
+Clarity-Mental-Health-AI-assistance/
 ├── client/               # React frontend
 │   ├── src/
 │   │   ├── components/   # Reusable UI components
@@ -248,16 +253,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you're in immediate danger or having thoughts of self-harm:
 
-- **Emergency**: Call 911 (US) or your local emergency number
-- **Crisis Text Line**: Text HOME to 741741
-- **National Suicide Prevention Lifeline**: 988
+- **Emergency (India)**: Call **112**
+- **KIRAN (Govt. of India mental health helpline)**: Call **1800-599-0019** (24×7, toll-free)
+- **Vandrevala Foundation**: Call **1860-2662-345** or **9999 666 555** (24×7)
+- **iCall**: Call **9152987821** (Mon–Sat, 10 AM–8 PM)
+- **AASRA**: Call **9820466726** (24×7)
 - **International**: Visit [findahelpline.com](https://findahelpline.com)
 
 ## 💬 Support
 
-- 📧 Email: support@clarity-mentalhealth.com
-- 💬 Discord: [Join our community](https://discord.gg/clarity)
-- 📚 Documentation: [docs.clarity-mentalhealth.com](https://docs.clarity-mentalhealth.com)
+- 🐛 Found a bug or want a feature? Open an issue: [github.com/AdityaxDeore/Clarity-Mental-Health-AI-assistance/issues](https://github.com/AdityaxDeore/Clarity-Mental-Health-AI-assistance/issues)
+- 📚 Setup and deployment notes: [DEPLOYMENT.md](DEPLOYMENT.md) and [MERN_SETUP.md](MERN_SETUP.md) in this repo
 
 ---
 
